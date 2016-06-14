@@ -12,7 +12,6 @@ BioJets Hierarchical Clustering
 
 For Hierarchical Clustering, our software makes use of code developed by another group. We make use of the fjcore distribution of fastjet, a software developed by the particle physics community for jet finding and analysis at colliders. 
 
---------------------------------------------------------------------------
                      FastJet release 3.2.0 [fjcore]
                  M. Cacciari, G.P. Salam and G. Soyez                  
      A software package for jet finding and analysis at colliders      
@@ -24,7 +23,6 @@ For Hierarchical Clustering, our software makes use of code developed by another
  FastJet is provided without warranty under the terms of the GNU GPLv2.
  It uses T. Chan's closest pair algorithm, S. Fortune's Voronoi code
  and 3rd party plugin jet algorithms. See COPYING file for details.
---------------------------------------------------------------------------
 
 To use the Hierarchical Clustering feature, 
   1) Compile the FastJetTree.cc code. 
