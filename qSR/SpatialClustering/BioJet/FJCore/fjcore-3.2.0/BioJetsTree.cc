@@ -6,26 +6,14 @@
 using namespace std;
 using namespace fjcore;
 
-
-// Notes for Jesse:
-// Jesse should implement pT-scheme recombination
-// Jesse should implement dynamic rescaling of pseudojets
-
 int main(int argc, char *argv[]) {
-
-   // Defining Scale Factors
-   double scaleFactorX = 1.0;//50000.0; //larger than 255px*160nm/px (the largest expected value) 
-   double scaleFactorIntensity = 1000000000.0;
 
    // Parsing Input Arguments
 
    char* inputFile = argv[1];
    char* outputFile = argv[2];
 
-   //double ClusteringLengthScalePx = 0;
-   //ClusteringLengthScalePx = strtod(argv[3],NULL);
-   //double ClusteringLengthScale = ClusteringLengthScalePx/scaleFactorX;
-   double ClusteringLengthScale = 3.1415;
+   double ClusteringLengthScale = 3.1415; 
 
    // file for read in (space separated)
 
@@ -55,7 +43,7 @@ int main(int argc, char *argv[]) {
     
       // map onto FastJet objects
 
-      double pt = 1.0 + intensity/scaleFactorIntensity;
+      double pt = 1.0;
       double eta = x ;// / scaleFactorX;
       double phi = y ;// / scaleFactorX;
       PseudoJet particle;
@@ -87,7 +75,7 @@ int main(int argc, char *argv[]) {
 	   // 	break;
 	  //		}
 	   
-	   fout_dendrogram  << parent1+1 << " " << parent2+1 << " " << dij << endl;
+	   fout_dendrogram  << parent1+1 << " " << parent2+1 << " " << sqrt(dij)*ClusteringLengthScale << endl;
 	
    		}
 
