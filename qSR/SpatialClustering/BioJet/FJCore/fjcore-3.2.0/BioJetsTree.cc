@@ -59,7 +59,7 @@ int main(int argc, char *argv[]) {
    
    // Run Fastjet algorithm 
 
-   fjcore::JetDefinition jetDef(cambridge_algorithm, ClusteringLengthScale);
+   fjcore::JetDefinition jetDef(cambridge_algorithm, ClusteringLengthScale, BIpt_scheme);
    ClusterSequence cs(event, jetDef);
    vector<ClusterSequence::history_element>  history=cs.history();
    
