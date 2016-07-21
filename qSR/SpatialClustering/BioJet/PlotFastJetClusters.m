@@ -45,8 +45,8 @@ function clusters=PlotFastJetClusters(Data,tree,cut_height,varargin)
     %% Cut Tree
     
         clusters = CutTree(tree,cut_height);
-        clusters_small = CutTree(tree,cut_height/2);
-        clusters_large = CutTree(tree,cut_height*2);
+        clusters_small = CutTree(tree,cut_height/1.5);
+        clusters_large = CutTree(tree,cut_height*1.5);
         
     %% Determine Clusters to Plot
     switch plot_mode
