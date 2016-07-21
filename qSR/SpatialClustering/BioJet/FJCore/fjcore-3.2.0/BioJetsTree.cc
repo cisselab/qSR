@@ -13,7 +13,7 @@ int main(int argc, char *argv[]) {
    char* inputFile = argv[1];
    char* outputFile = argv[2];
 
-   double ClusteringLengthScale = 3.1415; 
+   double ClusteringLengthScale = 3.1415; // The cluster length scale is arbitrarily set at pi, because all data are rescaled between [0,1] in both coordinates, and pi > sqrt(2). 
 
    // file for read in (space separated)
 
