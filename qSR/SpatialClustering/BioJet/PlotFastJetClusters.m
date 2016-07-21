@@ -45,8 +45,9 @@ function clusters=PlotFastJetClusters(Data,tree,cut_height,varargin)
     %% Cut Tree
     
         clusters = CutTree(tree,cut_height);
-        clusters_small = CutTree(tree,cut_height/1.5);
-        clusters_large = CutTree(tree,cut_height*1.5);
+        scaling_ratio=1.5;
+        clusters_small = CutTree(tree,cut_height/scaling_ratio);
+        clusters_large = CutTree(tree,cut_height*scaling_ratio);
         
     %% Determine Clusters to Plot
     switch plot_mode
@@ -72,7 +73,7 @@ function clusters=PlotFastJetClusters(Data,tree,cut_height,varargin)
                 hold on
                 colormat = [1-Data(clusters_small>0,1)/max(Data(clusters_small>0,1)),zeros(sum(clusters_small>0),1),Data(clusters_small>0,1)/max(Data(clusters_small>0,1))];
                 scatter(Data(clusters_small>0,2),Data(clusters_small>0,3),4,colormat)
-                title(['Length Scale:',num2str(cut_height/2)])
+                title(['Length Scale:',num2str(cut_height/scaling_ratio)])
                 
                 subplot(1,3,2)
                 plot(Data(:,2),Data(:,3),'.k')
@@ -86,14 +87,14 @@ function clusters=PlotFastJetClusters(Data,tree,cut_height,varargin)
                 hold on
                 colormat = [1-Data(clusters_large>0,1)/max(Data(clusters_large>0,1)),zeros(sum(clusters_large>0),1),Data(clusters_large>0,1)/max(Data(clusters_large>0,1))];
                 scatter(Data(clusters_large>0,2),Data(clusters_large>0,3),4,colormat)
-                title(['Length Scale:',num2str(cut_height*2)])
+                title(['Length Scale:',num2str(cut_height*scaling_ratio)])
             else
                 figure
                 subplot(1,3,1)
                 plot(Data(:,2),Data(:,3),'.k')
                 hold on
                 plot(Data(clusters_small>0,2),Data(clusters_small>0,3),'.r')
-                title(['Length Scale:',num2str(cut_height/2)])
+                title(['Length Scale:',num2str(cut_height/scaling_ratio)])
                 
                 subplot(1,3,2)
                 plot(Data(:,2),Data(:,3),'.k')
@@ -105,7 +106,7 @@ function clusters=PlotFastJetClusters(Data,tree,cut_height,varargin)
                 plot(Data(:,2),Data(:,3),'.k')
                 hold on
                 plot(Data(clusters_large>0,2),Data(clusters_large>0,3),'.r')
-                title(['Length Scale:',num2str(cut_height*2)])
+                title(['Length Scale:',num2str(cut_height*scaling_ratio)])
             end
         case 'top_clusters'
             size_dist=zeros(1,max([clusters,clusters_small,clusters_large]));
@@ -141,7 +142,7 @@ function clusters=PlotFastJetClusters(Data,tree,cut_height,varargin)
                 hold on
                 colormat = [1-Data(plot_indices_small,1)/max(Data(plot_indices_small,1)),zeros(sum(plot_indices_small),1),Data(plot_indices_small,1)/max(Data(plot_indices_small,1))];
                 scatter(Data(plot_indices_small,2),Data(plot_indices_small,3),4,colormat)
-                title(['Length Scale:',num2str(cut_height/2)])
+                title(['Length Scale:',num2str(cut_height/scaling_ratio)])
                 
                 subplot(1,3,2)
                 plot(Data(:,2),Data(:,3),'.k')
@@ -155,7 +156,7 @@ function clusters=PlotFastJetClusters(Data,tree,cut_height,varargin)
                 hold on
                 colormat = [1-Data(plot_indices_large,1)/max(Data(plot_indices_large,1)),zeros(sum(plot_indices_large),1),Data(plot_indices_large,1)/max(Data(plot_indices_large,1))];
                 scatter(Data(plot_indices_large,2),Data(plot_indices_large,3),4,colormat)
-                title(['Length Scale:',num2str(cut_height*2)])
+                title(['Length Scale:',num2str(cut_height*scaling_ratio)])
                 
                 
             else
@@ -166,7 +167,7 @@ function clusters=PlotFastJetClusters(Data,tree,cut_height,varargin)
                 plot(Data(:,2),Data(:,3),'.k')
                 hold on
                 plot(Data(plot_indices_small,2),Data(plot_indices_small,3),'.r')
-                title(['Length Scale:',num2str(cut_height/2)])
+                title(['Length Scale:',num2str(cut_height/scaling_ratio)])
                 
                 subplot(1,3,2)
                 plot(Data(:,2),Data(:,3),'.k')
@@ -178,7 +179,7 @@ function clusters=PlotFastJetClusters(Data,tree,cut_height,varargin)
                 plot(Data(:,2),Data(:,3),'.k')
                 hold on
                 plot(Data(plot_indices_large,2),Data(plot_indices_large,3),'.r')
-                title(['Length Scale:',num2str(cut_height*2)])
+                title(['Length Scale:',num2str(cut_height*scaling_ratio)])
             end
     end
     
