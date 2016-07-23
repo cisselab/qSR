@@ -1,7 +1,11 @@
 function tree=BioJetTree(Frames,Xpos,Ypos,Intensity,writefilename,fastjetoutfilename)
     
     %Define where the BioJetsTree compiled function is stored on computer
-    FastJetPath = '/Users/Owen/Documents/MATLAB/qSR/qSR/SpatialClustering/BioJet/FJCore/fjcore-3.2.0/';
+    
+    BJTFilename = mfilename('fullpath');
+    BJTPath = BJTFilename(1:end-10);
+    FastJetPath = [BJTPath,filesep,'FJCore',filesep,'fjcore-3.2.0',filesep];
+    %FastJetPath = '/Users/Owen/Documents/MATLAB/qSR/qSR/SpatialClustering/BioJet/FJCore/fjcore-3.2.0/';
 
     %Rescale Position Data. Note: One dimension in fastjet is periodic with period 2pi, so
     %restricting it to the region [0,1] will prevent forming "wraparound"
