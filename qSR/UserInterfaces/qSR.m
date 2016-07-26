@@ -22,7 +22,7 @@ function varargout = qSR(varargin)
 
 % Edit the above text to modify the response to help qSR
 
-% Last Modified by GUIDE v2.5 14-Jun-2016 14:20:58
+% Last Modified by GUIDE v2.5 26-Jul-2016 15:05:17
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -55,6 +55,7 @@ function qSR_OpeningFcn(hObject, eventdata, handles, varargin)
 handles.output = hObject;
 handles.ROIs={};
 handles.which_filter='raw';
+handles.filetype='SRL';
 handles.valid_sp_clusters=false;
 handles.valid_st_clusters=false;
 
@@ -88,7 +89,8 @@ function LoadData_Callback(hObject, eventdata, handles)
 [filename,dirName]=uigetfile('*.*','Select the Cell Data');
 handles.filename = filename;
 handles.directory = dirName;
-[Frames,XposRaw,YposRaw,Intensity]=ReadDataFile([dirName,filename]);
+
+[Frames,XposRaw,YposRaw,Intensity]=ReadDataFile([dirName,filename],handles.filetype,hObject,handles);
 
 %% Initialize Variables and Update Handles
 % handles.filter = true(1,length(Frames)); %Initialize for later use.
@@ -106,6 +108,54 @@ handles.Frames=Frames;
 handles.Intensity=Intensity;
 guidata(hObject, handles);
 
+AdjustPixelSize(hObject,eventdata,handles)
+
+% --- Executes on button press in filetype_SRL.
+function filetype_SRL_Callback(hObject, eventdata, handles)
+% hObject    handle to filetype_SRL (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of filetype_SRL
+
+handles.filetype='SRL';
+guidata(hObject,handles)
+
+% --- Executes on button press in filetype_Quick.
+function filetype_Quick_Callback(hObject, eventdata, handles)
+% hObject    handle to filetype_Quick (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of filetype_Quick
+
+handles.filetype='QuickPALM';
+guidata(hObject,handles)
+
+% --- Executes on button press in filetype_Thunder.
+function filetype_Thunder_Callback(hObject, eventdata, handles)
+% hObject    handle to filetype_Thunder (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of filetype_Thunder
+
+handles.filetype='ThunderSTORM';
+guidata(hObject,handles)
+
+function pixel_size_Callback(hObject, eventdata, handles)
+% hObject    handle to pixel_size (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of pixel_size as text
+%        str2double(get(hObject,'String')) returns contents of pixel_size as a double
+
+pixel_size = str2num(get(handles.pixel_size,'String'));
+if isempty(pixel_size)
+    set(handles.pixel_size,'String',160)
+    guidata(hObject,handles)
+end
 AdjustPixelSize(hObject,eventdata,handles)
 
 % --- Executes on button press in LoadWorkSpace.
@@ -143,21 +193,6 @@ if isfield(handles,'directory')
     cd(current_directory)
 else
 end
-
-function pixel_size_Callback(hObject, eventdata, handles)
-% hObject    handle to pixel_size (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-% Hints: get(hObject,'String') returns contents of pixel_size as text
-%        str2double(get(hObject,'String')) returns contents of pixel_size as a double
-
-pixel_size = str2num(get(handles.pixel_size,'String'));
-if isempty(pixel_size)
-    set(handles.pixel_size,'String',160)
-    guidata(hObject,handles)
-end
-AdjustPixelSize(hObject,eventdata,handles)
 
 
 
@@ -705,7 +740,7 @@ function SaveTempSumStat_Callback(hObject, eventdata, handles)
     
 % --------- Auxiliary Functions ------------------------ %
 
-function [Times,Xpos,Ypos,Intensity]=ReadDataFile(filename)
+function [Times,Xpos,Ypos,Intensity]=ReadDataFile(filename,filetype,hObject,handles)
     %Opens a .csv file containing a list of localizations and creates Matlab
     %variables labeling the Time, Xposition and Yposition of each
     %localization. The .csv file is assumed to contain one row per
@@ -727,7 +762,29 @@ function [Times,Xpos,Ypos,Intensity]=ReadDataFile(filename)
         Ypos=FileContents(:,3)';
         Intensity=FileContents(:,4)';
     else
-        error('File Type Not Supported')
+        switch filetype
+            case 'SRL'
+                FileContents=csvread(filename,1,0); 
+                Times = FileContents(:,1)';
+                Xpos=FileContents(:,2)';
+                Ypos=FileContents(:,3)';
+                Intensity=FileContents(:,4)';
+            case 'QuickPALM'
+                FileContents=dlmread(filename,'\t',1,0); 
+                Times = FileContents(:,15)';
+                Xpos=FileContents(:,3)';
+                Ypos=FileContents(:,4)';
+                Intensity=FileContents(:,2)';
+            case 'ThunderSTORM'
+                FileContents=csvread(filename,1,0); 
+                Times = FileContents(:,1)';
+                Xpos=FileContents(:,2)';
+                Ypos=FileContents(:,3)';
+                Intensity=FileContents(:,5)';
+                msgbox('ThunderSTORM output is in units of nanometers, not pixels. "Pixel Size" set to 1.')
+                set(handles.pixel_size,'String',1)
+                guidata(hObject,handles)
+        end
     end
 
 function AdjustPixelSize(hObject,eventdata,handles)
@@ -735,6 +792,7 @@ function AdjustPixelSize(hObject,eventdata,handles)
     % nanometers (Xposnm and Yposnm) using the raw x and y positions in
     % units of pixels (XposRaw and YposRaw) and the pixel size stated in
     % the Getting Started box.
+    
     pixel_size = str2num(get(handles.pixel_size,'String'));
     handles.Xposnm = handles.XposRaw*pixel_size;
     handles.Yposnm = handles.YposRaw*pixel_size;
@@ -981,3 +1039,5 @@ function RenderingPrecision_CreateFcn(hObject, eventdata, handles)
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
+
+
