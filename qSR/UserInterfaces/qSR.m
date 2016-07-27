@@ -153,6 +153,11 @@ function pixel_size_Callback(hObject, eventdata, handles)
 
 pixel_size = str2num(get(handles.pixel_size,'String'));
 if isempty(pixel_size)
+    msgbox('Invalid pixel size')
+    set(handles.pixel_size,'String',160)
+    guidata(hObject,handles)
+elseif pixel_size <=0
+    msgbox('Pixel size must be a positive number!')
     set(handles.pixel_size,'String',160)
     guidata(hObject,handles)
 end
@@ -297,10 +302,21 @@ function IsoLengthScale_Callback(hObject, eventdata, handles)
 % Hints: get(hObject,'String') returns contents of IsoLengthScale as text
 %        str2double(get(hObject,'String')) returns contents of IsoLengthScale as a double
 
-switch handles.which_filter
-    case 'iso'
-        SetfPosVectors(hObject,eventdata,handles)
-    otherwise
+length_scale = str2num(get(handles.IsoLengthScale,'String'));
+if isempty(length_scale)
+    msgbox('Invalid length scale!')
+    set(handles.IsoLengthScale,'String',160)
+    guidata(hObject,handles)
+elseif length_scale <=0
+    msgbox('Length scale must be a positive number!')
+    set(handles.IsoLengthScale,'String',160)
+    guidata(hObject,handles)
+else
+    switch handles.which_filter
+        case 'iso'
+            SetfPosVectors(hObject,eventdata,handles)
+        otherwise
+    end
 end
 
 % --- Executes on button press in QuickMerge.
@@ -323,11 +339,24 @@ function QuickMergeLengthScale_Callback(hObject, eventdata, handles)
 % Hints: get(hObject,'String') returns contents of QuickMergeLengthScale as text
 %        str2double(get(hObject,'String')) returns contents of QuickMergeLengthScale as a double
 
-switch handles.which_filter
-    case 'quick'
-        SetfPosVectors(hObject,eventdata,handles)
-    otherwise
+length_scale = str2num(get(handles.QuickMergeLengthScale,'String'));
+if isempty(length_scale)
+    msgbox('Invalid length scale!')
+    set(handles.QuickMergeLengthScale,'String',40)
+    guidata(hObject,handles)
+elseif length_scale <=0
+    msgbox('Length scale must be a positive number!')
+    set(handles.QuickMergeLengthScale,'String',40)
+    guidata(hObject,handles)
+else
+    switch handles.which_filter
+        case 'quick'
+            SetfPosVectors(hObject,eventdata,handles)
+        otherwise
+    end
 end
+
+
 
 function DarkTimeTolerance_Callback(hObject, eventdata, handles)
 % hObject    handle to DarkTimeTolerance (see GCBO)
@@ -337,10 +366,21 @@ function DarkTimeTolerance_Callback(hObject, eventdata, handles)
 % Hints: get(hObject,'String') returns contents of DarkTimeTolerance as text
 %        str2double(get(hObject,'String')) returns contents of DarkTimeTolerance as a double
 
-switch handles.which_filter
-    case 'quick'
-        SetfPosVectors(hObject,eventdata,handles)
-    otherwise
+dark_tolerance = str2num(get(handles.DarkTimeTolerance,'String'));
+if isempty(dark_tolerance)
+    msgbox('Invalid Input!')
+    set(handles.DarkTimeTolerance,'String',20)
+    guidata(hObject,handles)
+elseif dark_tolerance <=0
+    msgbox('Tolerance should be a positive integer!')
+    set(handles.DarkTimeTolerance,'String',20)
+    guidata(hObject,handles)
+else
+    switch handles.which_filter
+        case 'quick'
+            SetfPosVectors(hObject,eventdata,handles)
+        otherwise
+    end
 end
 
 function QuickMergeMinPoints_Callback(hObject, eventdata, handles)
@@ -351,11 +391,24 @@ function QuickMergeMinPoints_Callback(hObject, eventdata, handles)
 % Hints: get(hObject,'String') returns contents of QuickMergeMinPoints as text
 %        str2double(get(hObject,'String')) returns contents of QuickMergeMinPoints as a double
 
-switch handles.which_filter
-    case 'quick'
-        SetfPosVectors(hObject,eventdata,handles)
-    otherwise
+min_pts = str2num(get(handles.QuickMergeMinPoints,'String'));
+if isempty(min_pts)
+    msgbox('Invalid Input!')
+    set(handles.QuickMergeMinPoints,'String',1)
+    guidata(hObject,handles)
+elseif min_pts <=0
+    msgbox('The minimum points should be a positive integer!')
+    set(handles.QuickMergeMinPoints,'String',1)
+    guidata(hObject,handles)
+else
+    switch handles.which_filter
+        case 'quick'
+            SetfPosVectors(hObject,eventdata,handles)
+        otherwise
+    end
 end
+
+
 
 
 
@@ -458,6 +511,17 @@ function NumPixels_Callback(hObject, eventdata, handles)
 % Hints: get(hObject,'String') returns contents of NumPixels as text
 %        str2double(get(hObject,'String')) returns contents of NumPixels as a double
 
+num_pixels = str2num(get(handles.NumPixels,'String'));
+if isempty(num_pixels)
+    msgbox('Invalid Input!')
+    set(handles.NumPixels,'String',1080)
+    guidata(hObject,handles)
+elseif num_pixels <=0
+    msgbox('The number of pixels should be a positive integer!')
+    set(handles.NumPixels,'String',1080)
+    guidata(hObject,handles)
+end
+
 function RenderingPrecision_Callback(hObject, eventdata, handles)
 % hObject    handle to RenderingPrecision (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
@@ -466,7 +530,16 @@ function RenderingPrecision_Callback(hObject, eventdata, handles)
 % Hints: get(hObject,'String') returns contents of RenderingPrecision as text
 %        str2double(get(hObject,'String')) returns contents of RenderingPrecision as a double
 
-
+precision = str2num(get(handles.RenderingPrecision,'String'));
+if isempty(precision)
+    msgbox('Invalid Input!')
+    set(handles.RenderingPrecision,'String',50)
+    guidata(hObject,handles)
+elseif precision <=0
+    msgbox('The precision should be a positive number!')
+    set(handles.RenderingPrecision,'String',50)
+    guidata(hObject,handles)
+end
 
 
 
