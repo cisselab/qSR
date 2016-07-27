@@ -207,41 +207,45 @@ function SelectNucleus_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-figure
-PlotPointillist(hObject,handles)
+if isfield(handles,'XposRaw')
+    figure
+    PlotPointillist(hObject,handles)
 
-FreehandROIhandle = imfreehand; %Allows the user to draw a boundary for the nucleus
-handles.FreehandROI = getPosition(FreehandROIhandle); %Returns an ordered list of the x and y coordinates that defines the boundary.
-px_size=str2num(get(handles.pixel_size,'String'));
-handles.FreehandROIpx=handles.FreehandROI/px_size;
+    FreehandROIhandle = imfreehand; %Allows the user to draw a boundary for the nucleus
+    handles.FreehandROI = getPosition(FreehandROIhandle); %Returns an ordered list of the x and y coordinates that defines the boundary.
+    px_size=str2num(get(handles.pixel_size,'String'));
+    handles.FreehandROIpx=handles.FreehandROI/px_size;
 
-handles.NuclearArea = polyarea(handles.FreehandROI(:,1),handles.FreehandROI(:,2));
+    handles.NuclearArea = polyarea(handles.FreehandROI(:,1),handles.FreehandROI(:,2));
 
-InNucleus = inpolygon(handles.Xposnm,handles.Yposnm,handles.FreehandROI(:,1),handles.FreehandROI(:,2));
+    InNucleus = inpolygon(handles.Xposnm,handles.Yposnm,handles.FreehandROI(:,1),handles.FreehandROI(:,2));
 
-Times=1:max(handles.Frames);
-Counts = zeros(1,length(Times));
-for i = Times
-    Counts(i)=sum(handles.Frames(InNucleus)==i);
+    Times=1:max(handles.Frames);
+    Counts = zeros(1,length(Times));
+    for i = Times
+        Counts(i)=sum(handles.Frames(InNucleus)==i);
+    end
+    CumulativeCounts = cumsum(Counts);
+
+    modelfnhandle = @(params,x)(params(1)*(1-exp(-x/params(2)))+params(3)*x); %Assumes an exonential decay of detection rate, and a constant false positive rate
+    fitParams = nlinfit(Times,CumulativeCounts,modelfnhandle,[length(handles.Frames),0.5,0]);
+
+    figure
+    plot(Times,modelfnhandle(fitParams,Times),'c')
+    hold on
+    plot(Times,CumulativeCounts,'r')
+    xlabel('Time (Frames)')
+    ylabel('Cumulative Localizations')
+    legend('Fit Data','Raw Data')
+    drawnow
+
+    handles.fitParams = fitParams;
+    guidata(hObject, handles);
+
+    SetfPosVectors(hObject,eventdata,handles)
+else
+    msgbox('You must first load data!')
 end
-CumulativeCounts = cumsum(Counts);
-
-modelfnhandle = @(params,x)(params(1)*(1-exp(-x/params(2)))+params(3)*x); %Assumes an exonential decay of detection rate, and a constant false positive rate
-fitParams = nlinfit(Times,CumulativeCounts,modelfnhandle,[length(handles.Frames),0.5,0]);
-
-figure
-plot(Times,modelfnhandle(fitParams,Times),'c')
-hold on
-plot(Times,CumulativeCounts,'r')
-xlabel('Time (Frames)')
-ylabel('Cumulative Localizations')
-legend('Fit Data','Raw Data')
-drawnow
-
-handles.fitParams = fitParams;
-guidata(hObject, handles);
-
-SetfPosVectors(hObject,eventdata,handles)
 
 % --- Executes on button press in RestrictToNuclear.
 function RestrictToNuclear_Callback(hObject, eventdata, handles)
@@ -251,7 +255,15 @@ function RestrictToNuclear_Callback(hObject, eventdata, handles)
 
 % Hint: get(hObject,'Value') returns toggle state of RestrictToNuclear
 
-SetfPosVectors(hObject,eventdata,handles)
+if isfield(handles,'RestrictToNuclear')
+    if get(handles.RestrictToNuclear,'Value')
+        if isfield(handles,'FreehandROI')
+            SetfPosVectors(hObject,eventdata,handles)
+        else
+            msgbox('You must first select the Nucleus!')
+        end
+    end
+end
 
 % --- Executes on button press in RawData.
 function RawData_Callback(hObject, eventdata, handles)
@@ -404,36 +416,39 @@ function Render_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
+    if isfield(handles,'XposRaw')
+        Xmin = min(handles.fXpos);Xmax=max(handles.fXpos);Ymin=min(handles.fYpos);Ymax=max(handles.fYpos);
+        NumPixels = str2num(get(handles.NumPixels,'String'));
+        sigma_render = str2num(get(handles.RenderingPrecision,'String'));
 
-    Xmin = min(handles.fXpos);Xmax=max(handles.fXpos);Ymin=min(handles.fYpos);Ymax=max(handles.fYpos);
-    NumPixels = str2num(get(handles.NumPixels,'String'));
-    sigma_render = str2num(get(handles.RenderingPrecision,'String'));
-    
-    dx=(Xmax-Xmin)/(NumPixels-1);
-    dy=(Ymax-Ymin)/(NumPixels-1);
-    Edges{1}=Xmin:dx:Xmax;
-    Edges{2}=Ymin:dy:Ymax;
+        dx=(Xmax-Xmin)/(NumPixels-1);
+        dy=(Ymax-Ymin)/(NumPixels-1);
+        Edges{1}=Xmin:dx:Xmax;
+        Edges{2}=Ymin:dy:Ymax;
 
-    Im = hist3([handles.fXpos',handles.fYpos'],'Edges',Edges);
-    
-    TempX=-round(3*sigma_render/dx)*dx:dx:round(3*sigma_render/dx)*dx;
-    TempY=-round(3*sigma_render/dy)*dy:dy:round(3*sigma_render/dy)*dy;
-    
-    ConVecX = exp(-0.5*(TempX/sigma_render).^2); 
-    ConVecY = exp(-0.5*(TempY/sigma_render).^2);
-    Im2 = conv2(ConVecX,ConVecY,Im);
-    Im2=Im2/max(max(Im2));
-    Im2=Im2(:,end:-1:1)';
+        Im = hist3([handles.fXpos',handles.fYpos'],'Edges',Edges);
 
-    
-    extra_pixels=(size(Im2)-size(Im))/2;
-    
-    Im2=Im2((extra_pixels(1)+1):(end-extra_pixels(1)),(extra_pixels(2)+1):(end-extra_pixels(2)));
-    
-    figure
-    imshow(Im2);
-    colormap(hot)
-    imcontrast(gca)
+        TempX=-round(3*sigma_render/dx)*dx:dx:round(3*sigma_render/dx)*dx;
+        TempY=-round(3*sigma_render/dy)*dy:dy:round(3*sigma_render/dy)*dy;
+
+        ConVecX = exp(-0.5*(TempX/sigma_render).^2); 
+        ConVecY = exp(-0.5*(TempY/sigma_render).^2);
+        Im2 = conv2(ConVecX,ConVecY,Im);
+        Im2=Im2/max(max(Im2));
+        Im2=Im2(:,end:-1:1)';
+
+
+        extra_pixels=(size(Im2)-size(Im))/2;
+
+        Im2=Im2((extra_pixels(1)+1):(end-extra_pixels(1)),(extra_pixels(2)+1):(end-extra_pixels(2)));
+
+        figure
+        imshow(Im2);
+        colormap(hot)
+        imcontrast(gca)
+    else
+        msgbox('You must first load data!')
+    end
 
 function NumPixels_Callback(hObject, eventdata, handles)
 % hObject    handle to NumPixels (see GCBO)
@@ -464,7 +479,11 @@ function PairCorrelation_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-PairCorrelation(hObject)
+if isfield(handles,'XposRaw')
+    PairCorrelation(hObject)
+else
+    msgbox('You must first load data!')
+end
 
 % --- Executes on button press in DBSCAN.
 function DBSCAN_Callback(hObject, eventdata, handles)
@@ -472,14 +491,23 @@ function DBSCAN_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-DBSCANgui(hObject,handles)
+if isfield(handles,'XposRaw')
+    DBSCANgui(hObject,handles)
+else
+    msgbox('You must first load data!')
+end
 
 % --- Executes on button press in BioJets.
 function BioJets_Callback(hObject, eventdata, handles)
 % hObject    handle to BioJets (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-HierarchicalClustering(hObject)
+
+if isfield(handles,'XposRaw')
+    HierarchicalClustering(hObject)
+else
+    msgbox('You must first load data!')
+end
 
 % --- Executes on button press in ManualROI.
 function ManualROI_Callback(hObject, eventdata, handles)
@@ -487,13 +515,17 @@ function ManualROI_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-set(handles.PlotROIS,'Value',1)
-guidata(hObject,handles)
-PlotPointillist_Callback(hObject, eventdata, handles)
-rectangle = imrect;
-rectangleCorners = getPosition(rectangle);
-handles.ROIs{end+1}=rectangleCorners;
-guidata(hObject,handles)
+if isfield(handles,'XposRaw')
+    set(handles.PlotROIS,'Value',1)
+    guidata(hObject,handles)
+    PlotPointillist_Callback(hObject, eventdata, handles)
+    rectangle = imrect;
+    rectangleCorners = getPosition(rectangle);
+    handles.ROIs{end+1}=rectangleCorners;
+    guidata(hObject,handles)
+else
+    msgbox('You must first load data!')
+end
 
 % --- Executes on button press in ImmediateROITimeTrace.
 function ImmediateROITimeTrace_Callback(hObject, eventdata, handles)
@@ -509,17 +541,28 @@ function ClearROIs_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-set(handles.PlotROIS,'Value',1)
-guidata(hObject,handles)
-PlotPointillist_Callback(hObject, eventdata, handles)
-rectangle = imrect;
-rectangleCorners = getPosition(rectangle);
-delete_indices = ROIsInBox(handles.ROIs,rectangleCorners);
-handles.ROIs(delete_indices)=[];
-guidata(hObject,handles)
-hold off
-PlotPointillist_Callback(hObject, eventdata, handles)
-
+if isfield(handles,'XPosRaw')
+    if isfield(handles,'ROIs')
+        if isempty(handles.ROIs)
+            msgbox('No ROIs Selected!')
+        else
+            set(handles.PlotROIS,'Value',1)
+            guidata(hObject,handles)
+            PlotPointillist_Callback(hObject, eventdata, handles)
+            rectangle = imrect;
+            rectangleCorners = getPosition(rectangle);
+            delete_indices = ROIsInBox(handles.ROIs,rectangleCorners);
+            handles.ROIs(delete_indices)=[];
+            guidata(hObject,handles)
+            hold off
+            PlotPointillist_Callback(hObject, eventdata, handles)
+        end
+    else
+        msgbox('No ROIs Selected!')
+    end
+else
+    msgbox('You must first load data!')
+end
 
 % --------- Box 5: Post Processing Tools --------------- %
 
@@ -597,13 +640,26 @@ function ManualTempCluster_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-ManualTemporalClustering(hObject)
+if isfield(handles,'XPosRaw')
+    if isfield(handles,'ROIs')
+        if isempty(handles.ROIs)
+            msgbox('No ROIs Selected!')
+        else
+            ManualTemporalClustering(hObject)
+        end
+    else
+        msgbox('No ROIs Selected!')
+    end
+else
+    msgbox('You must first load data!')
+end
 
 % --- Executes on button press in AutoTempClust.
 function AutoTempClust_Callback(hObject, eventdata, handles)
 % hObject    handle to AutoTempClust (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+
 
 dark_time_tolerance=inputdlg('Specify the Dark Time Tolerance (in Frames)');
 if isempty(dark_time_tolerance)
@@ -725,8 +781,6 @@ function SaveTempSumStat_Callback(hObject, eventdata, handles)
         fData_filename = [handles.directory,'filtered_data_for_temporal',num2str(n),'.csv'];
         csvwrite(fData_filename,[handles.fFrames;handles.fXpos;handles.fYpos;handles.fIntensity])
         
-        
-
         st_cluster_filename = [handles.directory,'st_clusters',num2str(n),'.csv'];
         csvwrite(st_cluster_filename,handles.st_clusters);
     else
@@ -793,139 +847,151 @@ function AdjustPixelSize(hObject,eventdata,handles)
     % units of pixels (XposRaw and YposRaw) and the pixel size stated in
     % the Getting Started box.
     
-    pixel_size = str2num(get(handles.pixel_size,'String'));
-    handles.Xposnm = handles.XposRaw*pixel_size;
-    handles.Yposnm = handles.YposRaw*pixel_size;
-    
-    if isfield(handles,'FreehandROI')
-        handles.FreehandROI=handles.FreehandROIpx*pixel_size;
+    if isfield(handles,'XposRaw')
+        pixel_size = str2num(get(handles.pixel_size,'String'));
+        handles.Xposnm = handles.XposRaw*pixel_size;
+        handles.Yposnm = handles.YposRaw*pixel_size;
+
+        if isfield(handles,'FreehandROI')
+            handles.FreehandROI=handles.FreehandROIpx*pixel_size;
+        end
+
+        guidata(hObject, handles);
+
+        SetfPosVectors(hObject,eventdata,handles)
+    else
+        msgbox('You must first load data!')
     end
-    
-    guidata(hObject, handles);
-    
-    SetfPosVectors(hObject,eventdata,handles)
-    
+        
 function SetfPosVectors(hObject,eventdata,handles)
     % Checks for what type of filter should be applied from the
     % pre-process / filter data box and adjusts the filtered positions
     % (fXpos and fYpos) accordingly.
     
-    handles.valid_sp_clusters=false;
-    handles.valid_st_clusters=false;
-    
-    if isfield(handles,'RestrictToNuclear')
-        if get(handles.RestrictToNuclear,'Value')
-            InNucleus = inpolygon(handles.Xposnm,handles.Yposnm,handles.FreehandROI(:,1),handles.FreehandROI(:,2));
+    if isfield(handles,'XposRaw')
+        handles.valid_sp_clusters=false;
+        handles.valid_st_clusters=false;
+
+        if isfield(handles,'RestrictToNuclear')
+            if get(handles.RestrictToNuclear,'Value')
+                InNucleus = inpolygon(handles.Xposnm,handles.Yposnm,handles.FreehandROI(:,1),handles.FreehandROI(:,2));
+            else
+                InNucleus=true(size(handles.Frames));
+            end
         else
             InNucleus=true(size(handles.Frames));
         end
-    else
-        InNucleus=true(size(handles.Frames));
-    end
-    
-    if isfield(handles,'which_filter')
-        switch handles.which_filter
-            case 'raw'
-                
-                handles.fXpos = handles.Xposnm(InNucleus);
-                handles.fYpos = handles.Yposnm(InNucleus);
-                handles.fFrames = handles.Frames(InNucleus);
-                handles.fIntensity = handles.Intensity(InNucleus);
-                guidata(hObject, handles);
-            case 'iso'
-                %Add progress bar
-                display('Add Progress Bar')
-                
-                threshold = str2num(get(handles.IsoLengthScale,'String'));
-                handles.isolated = IsolatedDetectionFilter(handles.Frames,handles.Xposnm,handles.Yposnm,threshold);
-                relevent_pts=and(InNucleus,~handles.isolated);
-                handles.fXpos = handles.Xposnm(relevent_pts);
-                handles.fYpos = handles.Yposnm(relevent_pts);
-                handles.fFrames = handles.Frames(relevent_pts);
-                handles.fIntensity=handles.Intensity(relevent_pts);
-                guidata(hObject,handles)
-%             case 'continuous'
-%                 
-%                 display('Continuous Merge not installed')
-%                 handles.fXpos = handles.Xposnm;
-%                 handles.fYpos = handles.Yposnm;
-%                 handles.fFrames = handles.Frames;
-%                 guidata(hObject, handles);
-            case 'quick'
-                sigma = str2num(get(handles.QuickMergeLengthScale,'String'));
-                dark_time = str2num(get(handles.DarkTimeTolerance,'String')); 
-                min_points = str2num(get(handles.QuickMergeMinPoints,'String'));
-                handles.st_ids=QuickMerge(handles.Frames(InNucleus),handles.Xposnm(InNucleus),handles.Yposnm(InNucleus),sigma,dark_time);
-                [frameCentroid,xCentroid,yCentroid,totalIntensity]=QuickMergeCentroids(handles.Frames(InNucleus),handles.Xposnm(InNucleus),handles.Yposnm(InNucleus),handles.Intensity(InNucleus),handles.st_ids,min_points);
-                handles.fXpos = xCentroid;
-                handles.fYpos = yCentroid;
-                handles.fFrames = frameCentroid;
-                handles.fIntensity=totalIntensity;
-                guidata(hObject,handles);
+
+        if isfield(handles,'which_filter')
+            switch handles.which_filter
+                case 'raw'
+
+                    handles.fXpos = handles.Xposnm(InNucleus);
+                    handles.fYpos = handles.Yposnm(InNucleus);
+                    handles.fFrames = handles.Frames(InNucleus);
+                    handles.fIntensity = handles.Intensity(InNucleus);
+                    guidata(hObject, handles);
+                case 'iso'
+                    %Add progress bar
+                    display('Add Progress Bar')
+
+                    threshold = str2num(get(handles.IsoLengthScale,'String'));
+                    handles.isolated = IsolatedDetectionFilter(handles.Frames,handles.Xposnm,handles.Yposnm,threshold);
+                    relevent_pts=and(InNucleus,~handles.isolated);
+                    handles.fXpos = handles.Xposnm(relevent_pts);
+                    handles.fYpos = handles.Yposnm(relevent_pts);
+                    handles.fFrames = handles.Frames(relevent_pts);
+                    handles.fIntensity=handles.Intensity(relevent_pts);
+                    guidata(hObject,handles)
+    %             case 'continuous'
+    %                 
+    %                 display('Continuous Merge not installed')
+    %                 handles.fXpos = handles.Xposnm;
+    %                 handles.fYpos = handles.Yposnm;
+    %                 handles.fFrames = handles.Frames;
+    %                 guidata(hObject, handles);
+                case 'quick'
+                    sigma = str2num(get(handles.QuickMergeLengthScale,'String'));
+                    dark_time = str2num(get(handles.DarkTimeTolerance,'String')); 
+                    min_points = str2num(get(handles.QuickMergeMinPoints,'String'));
+                    handles.st_ids=QuickMerge(handles.Frames(InNucleus),handles.Xposnm(InNucleus),handles.Yposnm(InNucleus),sigma,dark_time);
+                    [frameCentroid,xCentroid,yCentroid,totalIntensity]=QuickMergeCentroids(handles.Frames(InNucleus),handles.Xposnm(InNucleus),handles.Yposnm(InNucleus),handles.Intensity(InNucleus),handles.st_ids,min_points);
+                    handles.fXpos = xCentroid;
+                    handles.fYpos = yCentroid;
+                    handles.fFrames = frameCentroid;
+                    handles.fIntensity=totalIntensity;
+                    guidata(hObject,handles);
+            end
+        else
+            handles.which_filter='raw';
+            guidata(hObject,handles)
+            handles.fXpos = handles.Xposnm(InNucleus);
+            handles.fYpos = handles.Yposnm(InNucleus);
+            handles.fFrames = handles.Frames(InNucleus);
+            handles.fIntensity = handles.Intensity(InNucleus);
+            guidata(hObject, handles);
         end
     else
-        handles.which_filter='raw';
-        guidata(hObject,handles)
-        handles.fXpos = handles.Xposnm(InNucleus);
-        handles.fYpos = handles.Yposnm(InNucleus);
-        handles.fFrames = handles.Frames(InNucleus);
-        handles.fIntensity = handles.Intensity(InNucleus);
-        guidata(hObject, handles);
+        msgbox('You must first load data!')
     end
-    
+   
 function PlotPointillist(hObject,handles)
     
-    time_color=get(handles.time_color,'Value');
-    show_clusters = get(handles.plot_clusters,'Value');
-    show_ROIs = get(handles.PlotROIS,'Value');
-    
-    hold off
-    plot(handles.fXpos,handles.fYpos,'.k','markersize',4)
-    hold on
-    
-    if time_color
-        if show_clusters
-            if isfield(handles,'sp_clusters')
-                if length(handles.sp_clusters)==length(handles.fXpos)
-                    plot_indices=handles.sp_clusters>0;
+    if isfield(handles,'XposRaw')
+        time_color=get(handles.time_color,'Value');
+        show_clusters = get(handles.plot_clusters,'Value');
+        show_ROIs = get(handles.PlotROIS,'Value');
+
+        hold off
+        plot(handles.fXpos,handles.fYpos,'.k','markersize',4)
+        hold on
+
+        if time_color
+            if show_clusters
+                if isfield(handles,'sp_clusters')
+                    if length(handles.sp_clusters)==length(handles.fXpos)
+                        plot_indices=handles.sp_clusters>0;
+                    else
+                        plot_indices=true(size(handles.fFrames));
+                    end
                 else
                     plot_indices=true(size(handles.fFrames));
                 end
+
             else
                 plot_indices=true(size(handles.fFrames));
             end
-            
+            colormat = [1-handles.fFrames(plot_indices)'/max(handles.fFrames(plot_indices)),zeros(sum(plot_indices),1),handles.fFrames(plot_indices)'/max(handles.fFrames(plot_indices))];
+            scatter(handles.fXpos(plot_indices),handles.fYpos(plot_indices),4,colormat)
         else
-            plot_indices=true(size(handles.fFrames));
+            if show_clusters
+                if isfield(handles,'sp_clusters')
+                    if length(handles.sp_clusters)==length(handles.fXpos)
+                        K=max(handles.sp_clusters);
+                        for k = 1:K
+                            Color = [k/K,rand,1-k/K];
+                            plot(handles.fXpos(handles.sp_clusters==k),handles.fYpos(handles.sp_clusters==k),'.','MarkerFaceColor',Color,...
+                                'Color',Color)
+                        end
+                    end
+                end
+            else
+            end
         end
-        colormat = [1-handles.fFrames(plot_indices)'/max(handles.fFrames(plot_indices)),zeros(sum(plot_indices),1),handles.fFrames(plot_indices)'/max(handles.fFrames(plot_indices))];
-        scatter(handles.fXpos(plot_indices),handles.fYpos(plot_indices),4,colormat)
-    else
-        if show_clusters
-            if isfield(handles,'sp_clusters')
-                if length(handles.sp_clusters)==length(handles.fXpos)
-                    K=max(handles.sp_clusters);
-                    for k = 1:K
-                        Color = [k/K,rand,1-k/K];
-                        plot(handles.fXpos(handles.sp_clusters==k),handles.fYpos(handles.sp_clusters==k),'.','MarkerFaceColor',Color,...
-                            'Color',Color)
+
+        if show_ROIs
+            if isfield(handles,'ROIs')
+                if ~isempty(handles.ROIs)
+                    for i = 1:length(handles.ROIs)
+                        x=[handles.ROIs{i}(1),handles.ROIs{i}(1)+handles.ROIs{i}(3),handles.ROIs{i}(1)+handles.ROIs{i}(3),handles.ROIs{i}(1),handles.ROIs{i}(1)];
+                        y=[handles.ROIs{i}(2),handles.ROIs{i}(2),handles.ROIs{i}(2)+handles.ROIs{i}(4),handles.ROIs{i}(2)+handles.ROIs{i}(4),handles.ROIs{i}(2)];
+                        plot(x,y,'-r')
                     end
                 end
             end
-        else
         end
-    end
-    
-    if show_ROIs
-        if isfield(handles,'ROIs')
-            if ~isempty(handles.ROIs)
-                for i = 1:length(handles.ROIs)
-                    x=[handles.ROIs{i}(1),handles.ROIs{i}(1)+handles.ROIs{i}(3),handles.ROIs{i}(1)+handles.ROIs{i}(3),handles.ROIs{i}(1),handles.ROIs{i}(1)];
-                    y=[handles.ROIs{i}(2),handles.ROIs{i}(2),handles.ROIs{i}(2)+handles.ROIs{i}(4),handles.ROIs{i}(2)+handles.ROIs{i}(4),handles.ROIs{i}(2)];
-                    plot(x,y,'-r')
-                end
-            end
-        end
+    else
+        msgbox('You must first load data!')
     end
      
 function sp_clusters=ClustersFromROIs(Xpos,Ypos,ROIs)
