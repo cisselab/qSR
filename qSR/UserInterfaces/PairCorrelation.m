@@ -103,31 +103,36 @@ handles.included_points = inpolygon(mainHandles.fXpos,mainHandles.fYpos,handles.
 
 guidata(hObject,handles)
 
-
 % --- Executes on button press in RunAnalysis.
 function RunAnalysis_Callback(hObject, eventdata, handles)
 % hObject    handle to RunAnalysis (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-pc_bin_size = str2num(get(handles.BinSize,'String'));
-pc_max_length = str2num(get(handles.MaxLength,'String'));
+if isfield(handles,'included_points')
+    DisplaySplash
 
-mainHandles=guidata(handles.mainObject);
+    pc_bin_size = str2num(get(handles.BinSize,'String'));
+    pc_max_length = str2num(get(handles.MaxLength,'String'));
 
-XposIN = mainHandles.fXpos(handles.included_points);
-YposIN = mainHandles.fYpos(handles.included_points);
+    mainHandles=guidata(handles.mainObject);
 
-[image,mask,~,~]=create_pc_image(XposIN,YposIN,pc_bin_size,handles.FreehandROICoordinateList);
+    XposIN = mainHandles.fXpos(handles.included_points);
+    YposIN = mainHandles.fYpos(handles.included_points);
 
-[~,handles.r,handles.g,~] = pair_corr(image,mask,pc_bin_size,pc_max_length);
-guidata(hObject,handles)
+    [image,mask,~,~]=create_pc_image(XposIN,YposIN,pc_bin_size,handles.FreehandROICoordinateList);
 
-figure
-plot(handles.r,handles.g,'.k')
-xlabel('r (nm)')
-ylabel('g(r)')
-title('Spatial Pair Correlation Function')
+    [~,handles.r,handles.g,~] = pair_corr(image,mask,pc_bin_size,pc_max_length);
+    guidata(hObject,handles)
+
+    figure
+    plot(handles.r,handles.g,'.k')
+    xlabel('r (nm)')
+    ylabel('g(r)')
+    title('Spatial Pair Correlation Function')
+else
+    msgbox('You must first select a region of interest!')
+end
 
 % --- Executes on button press in SaveOutput.
 function SaveOutput_Callback(hObject, eventdata, handles)
@@ -185,7 +190,8 @@ if isfield(handles,'r')
         fprintf(fhandle,[num2str(handles.r(i)),',',num2str(handles.g(i)),'\n']);
     end
     fclose(fhandle);
-    
+else
+    msgbox('You must first run the analysis!')
 end
 
 
@@ -198,6 +204,16 @@ function BinSize_Callback(hObject, eventdata, handles)
 % Hints: get(hObject,'String') returns contents of BinSize as text
 %        str2double(get(hObject,'String')) returns contents of BinSize as a double
 
+bin_size = str2num(get(handles.BinSize,'String'));
+if isempty(bin_size)
+    msgbox('Bin size must be a positive number!')
+    set(handles.BinSize,'String',10)
+    guidata(hObject,handles)
+elseif bin_size <=0
+    msgbox('Bin size must be a positive number!')
+    set(handles.BinSize,'String',10)
+    guidata(hObject,handles)
+end
 
 % --- Executes during object creation, after setting all properties.
 function BinSize_CreateFcn(hObject, eventdata, handles)
@@ -221,6 +237,17 @@ function MaxLength_Callback(hObject, eventdata, handles)
 % Hints: get(hObject,'String') returns contents of MaxLength as text
 %        str2double(get(hObject,'String')) returns contents of MaxLength as a double
 
+max_length = str2num(get(handles.MaxLength,'String'));
+bin_size = str2num(get(handles.BinSize,'String'));
+if isempty(max_length)
+    msgbox('Max length must be a positive number!')
+    set(handles.MaxLength,'String',1000)
+    guidata(hObject,handles)
+elseif max_length <= bin_size
+    msgbox('Max length must be larger than Bin Size!')
+    set(handles.MaxLength,'String',1000)
+    guidata(hObject,handles)
+end
 
 % --- Executes during object creation, after setting all properties.
 function MaxLength_CreateFcn(hObject, eventdata, handles)
@@ -233,3 +260,21 @@ function MaxLength_CreateFcn(hObject, eventdata, handles)
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
+
+function DisplaySplash()
+%     display('#--------------------------------------------------------------------------
+% #                       Pair Correlation Analysis
+% #
+% #Prabuddha Sengupta, Tijana Jovanovic-Talisman, Dunja Skoko, Malte Renz, Sarah L Veatch & Jennifer Lippincott-Schwartz
+% #Probing protein heterogeneity in the plasma membrane using PALM and pair correlation analysis
+% #                 M. Cacciari, G.P. Salam and G. Soyez                  
+% #     A software package for jet finding and analysis at colliders      
+% #                           http://fastjet.fr                           
+% #	                                                                      
+% # Please cite EPJC72(2012)1896 [arXiv:1111.6097] if you use this package
+% # for scientific work and optionally PLB641(2006)57 [hep-ph/0512210].   
+% #                                                                       
+% # FastJet is provided without warranty under the terms of the GNU GPLv2.
+% # It uses T. Chan's closest pair algorithm, S. Fortune's Voronoi code
+% # and 3rd party plugin jet algorithms. See COPYING file for details.
+% #--------------------------------------------------------------------------')
