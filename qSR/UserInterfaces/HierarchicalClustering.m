@@ -22,7 +22,7 @@ function varargout = HierarchicalClustering(varargin)
 
 % Edit the above text to modify the response to help HierarchicalClustering
 
-% Last Modified by GUIDE v2.5 26-May-2016 20:47:11
+% Last Modified by GUIDE v2.5 28-Jul-2016 15:58:05
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -111,34 +111,38 @@ function PlotClusters_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-mainHandles=guidata(handles.mainObject);
+if isfield(handles,'tree')
+    mainHandles=guidata(handles.mainObject);
 
-cut_height=str2num(get(handles.LengthScale,'String'));
-thresh_parameter=str2num(get(handles.ThresholdParameter,'String'));
-
-
-contents = cellstr(get(handles.ClusterDeterminant,'String'));
-cluster_determinant=contents{get(handles.ClusterDeterminant,'Value')};
-
-switch cluster_determinant
-    case 'Minimum Size'
-        threshold_scheme = 'min_points';
-    case 'Fixed Number'
-        threshold_scheme = 'top_clusters';
-end
+    cut_height=str2num(get(handles.LengthScale,'String'));
+    thresh_parameter=str2num(get(handles.ThresholdParameter,'String'));
 
 
+    contents = cellstr(get(handles.ClusterDeterminant,'String'));
+    cluster_determinant=contents{get(handles.ClusterDeterminant,'Value')};
 
-if get(handles.TimeColor,'Value')==1
-    color_scheme='time_colored';
+    switch cluster_determinant
+        case 'Minimum Size'
+            threshold_scheme = 'min_points';
+        case 'Fixed Number'
+            threshold_scheme = 'top_clusters';
+    end
+
+
+
+    if get(handles.TimeColor,'Value')==1
+        color_scheme='time_colored';
+    else
+        color_scheme='single_color';
+    end
+
+    Data=[mainHandles.fFrames;mainHandles.fXpos;mainHandles.fYpos]';
+    sp_clusters=PlotFastJetClusters(Data,handles.tree,cut_height,threshold_scheme,thresh_parameter,color_scheme);
+    handles.sp_clusters=sp_clusters;
+    guidata(hObject,handles)
 else
-    color_scheme='single_color';
+    msgbox('You must first Create the Tree!')
 end
-
-Data=[mainHandles.fFrames;mainHandles.fXpos;mainHandles.fYpos]';
-sp_clusters=PlotFastJetClusters(Data,handles.tree,cut_height,threshold_scheme,thresh_parameter,color_scheme);
-handles.sp_clusters=sp_clusters;
-guidata(hObject,handles)
 
 % --- Executes on button press in SaveClusters.
 function SaveClusters_Callback(hObject, eventdata, handles)
@@ -146,32 +150,32 @@ function SaveClusters_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-mainHandles=guidata(handles.mainObject);
-mainHandles.sp_clusters=handles.sp_clusters;
-mainHandles.valid_sp_clusters=true;
+if isfield(handles,'sp_clusters')
+    mainHandles=guidata(handles.mainObject);
+    mainHandles.sp_clusters=handles.sp_clusters;
+    mainHandles.valid_sp_clusters=true;
 
-mainHandles.sp_clust_algorithm = 'BioJets';
+    mainHandles.sp_clust_algorithm = 'BioJets';
 
-mainHandles.BioJets_lengthscale = str2num(get(handles.LengthScale,'String'));
-mainHandles.BioJets_thresh_parameter=str2num(get(handles.ThresholdParameter,'String'));
+    mainHandles.BioJets_lengthscale = str2num(get(handles.LengthScale,'String'));
+    mainHandles.BioJets_thresh_parameter=str2num(get(handles.ThresholdParameter,'String'));
 
-contents = cellstr(get(handles.ClusterDeterminant,'String'));
-cluster_determinant=contents{get(handles.ClusterDeterminant,'Value')};
+    contents = cellstr(get(handles.ClusterDeterminant,'String'));
+    cluster_determinant=contents{get(handles.ClusterDeterminant,'Value')};
 
-switch cluster_determinant
-    case 'Minimum Size'
-        mainHandles.BioJets_threshold_scheme = 'min_points';
-    case 'Fixed Number'
-        mainHandles.BioJets_threshold_scheme = 'top_clusters';
+    switch cluster_determinant
+        case 'Minimum Size'
+            mainHandles.BioJets_threshold_scheme = 'min_points';
+        case 'Fixed Number'
+            mainHandles.BioJets_threshold_scheme = 'top_clusters';
+    end
+
+    guidata(handles.mainObject,mainHandles)
+    
+    msgbox('Clusters saved!')
+else
+    msgbox('You must first Find Clusters!')
 end
-
-guidata(handles.mainObject,mainHandles)
-
-
-
-
-
-
 
 % --- Executes on button press in SaveROIs.
 function SaveROIs_Callback(hObject, eventdata, handles)
@@ -179,10 +183,16 @@ function SaveROIs_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-mainHandles=guidata(handles.mainObject);
-mainHandles.ROIs = clusters2ROIs(mainHandles.fXpos,mainHandles.fYpos,handles.sp_clusters);
-set(mainHandles.PlotROIS,'Value',1)
-guidata(handles.mainObject,mainHandles)
+if isfield(handles,'sp_clusters')
+    mainHandles=guidata(handles.mainObject);
+    mainHandles.ROIs = clusters2ROIs(mainHandles.fXpos,mainHandles.fYpos,handles.sp_clusters);
+    set(mainHandles.PlotROIS,'Value',1)
+    guidata(handles.mainObject,mainHandles)
+    
+    msgbox('ROIs saved!')
+else
+    msgbox('You must first Find Clusters!')
+end
 
 function LengthScale_Callback(hObject, eventdata, handles)
 % hObject    handle to LengthScale (see GCBO)
@@ -191,6 +201,17 @@ function LengthScale_Callback(hObject, eventdata, handles)
 
 % Hints: get(hObject,'String') returns contents of LengthScale as text
 %        str2double(get(hObject,'String')) returns contents of LengthScale as a double
+
+length_scale = str2num(get(handles.LengthScale,'String'));
+if isempty(length_scale)
+    msgbox('Length scale must be a positive number!')
+    set(handles.LengthScale,'String',160)
+    guidata(hObject,handles)
+elseif length_scale <=0
+    msgbox('Length scale must be a positive number!')
+    set(handles.LengthScale,'String',160)
+    guidata(hObject,handles)
+end
 
 % --- Executes during object creation, after setting all properties.
 function LengthScale_CreateFcn(hObject, eventdata, handles)
@@ -243,6 +264,17 @@ function ThresholdParameter_Callback(hObject, eventdata, handles)
 % Hints: get(hObject,'String') returns contents of ThresholdParameter as text
 %        str2double(get(hObject,'String')) returns contents of ThresholdParameter as a double
 
+thresh_param = str2num(get(handles.ThresholdParameter,'String'));
+if isempty(thresh_param)
+    msgbox('Parameter must be a positive integer!')
+    set(handles.ThresholdParameter,'String',20)
+    guidata(hObject,handles)
+elseif thresh_param <=0
+    msgbox('Parameter must be a positive integer!')
+    set(handles.ThresholdParameter,'String',20)
+    guidata(hObject,handles)
+end
+
 % --- Executes during object creation, after setting all properties.
 function ThresholdParameter_CreateFcn(hObject, eventdata, handles)
 % hObject    handle to ThresholdParameter (see GCBO)
@@ -284,4 +316,3 @@ end
 
 [~,sort_idx]=sort(cluster_size,'descend');
 ROIs=ROIs(sort_idx);
-
