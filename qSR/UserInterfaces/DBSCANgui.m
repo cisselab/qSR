@@ -82,18 +82,24 @@ function SaveClusters_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-mainHandles=guidata(handles.mainObject);
-mainHandles.sp_clusters=handles.cluster_IDs;
-mainHandles.valid_sp_clusters=true;
+if isfield(handles,'cluster_IDs')
+    mainHandles=guidata(handles.mainObject);
+    mainHandles.sp_clusters=handles.cluster_IDs;
+    mainHandles.valid_sp_clusters=true;
 
-mainHandles.sp_clust_algorithm = 'DBSCAN';
+    mainHandles.sp_clust_algorithm = 'DBSCAN';
 
-lengthscale = str2num(get(handles.LengthScale,'String'));
-nmin = str2num(get(handles.MinPoints,'String'));
-mainHandles.dbscan_length=lengthscale;
-mainHandles.dbscan_nmin=nmin;
+    lengthscale = str2num(get(handles.LengthScale,'String'));
+    nmin = str2num(get(handles.MinPoints,'String'));
+    mainHandles.dbscan_length=lengthscale;
+    mainHandles.dbscan_nmin=nmin;
 
-guidata(handles.mainObject,mainHandles)
+    guidata(handles.mainObject,mainHandles)
+    
+    msgbox('Export complete!')
+else
+    msgbox('You must first run the analysis!')
+end
 
 % --- Executes on button press in PlotGraph.
 function PlotGraph_Callback(hObject, eventdata, handles)
@@ -101,10 +107,14 @@ function PlotGraph_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-mainHandles=guidata(handles.mainObject);
-data=[mainHandles.fXpos',mainHandles.fYpos'];
-ids=handles.cluster_IDs;
-plot_2d_clusters(data,ids)
+if isfield(handles,'cluster_IDs')
+    mainHandles=guidata(handles.mainObject);
+    data=[mainHandles.fXpos',mainHandles.fYpos'];
+    ids=handles.cluster_IDs;
+    plot_2d_clusters(data,ids)
+else
+    msgbox('You must first run the analysis!')
+end
 
 function LengthScale_Callback(hObject, eventdata, handles)
 % hObject    handle to LengthScale (see GCBO)
@@ -114,6 +124,16 @@ function LengthScale_Callback(hObject, eventdata, handles)
 % Hints: get(hObject,'String') returns contents of LengthScale as text
 %        str2double(get(hObject,'String')) returns contents of LengthScale as a double
 
+length_scale = str2num(get(handles.LengthScale,'String'));
+if isempty(length_scale)
+    msgbox('Length scale must be a positive number!')
+    set(handles.LengthScale,'String',100)
+    guidata(hObject,handles)
+elseif length_scale <=0
+    msgbox('Length scale must be a positive number!')
+    set(handles.LengthScale,'String',100)
+    guidata(hObject,handles)
+end
 
 % --- Executes during object creation, after setting all properties.
 function LengthScale_CreateFcn(hObject, eventdata, handles)
@@ -137,6 +157,16 @@ function MinPoints_Callback(hObject, eventdata, handles)
 % Hints: get(hObject,'String') returns contents of MinPoints as text
 %        str2double(get(hObject,'String')) returns contents of MinPoints as a double
 
+min_pts = str2num(get(handles.MinPoints,'String'));
+if isempty(min_pts)
+    msgbox('Minimum Points must be a positive integer!')
+    set(handles.MinPoints,'String',10)
+    guidata(hObject,handles)
+elseif min_pts <=0
+    msgbox('Minimum Points must be a positive integer!')
+    set(handles.MinPoints,'String',10)
+    guidata(hObject,handles)
+end
 
 % --- Executes during object creation, after setting all properties.
 function MinPoints_CreateFcn(hObject, eventdata, handles)
