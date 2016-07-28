@@ -614,7 +614,7 @@ function ClearROIs_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-if isfield(handles,'XPosRaw')
+if isfield(handles,'XposRaw')
     if isfield(handles,'ROIs')
         if isempty(handles.ROIs)
             msgbox('No ROIs Selected!')
@@ -713,7 +713,7 @@ function ManualTempCluster_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-if isfield(handles,'XPosRaw')
+if isfield(handles,'XposRaw')
     if isfield(handles,'ROIs')
         if isempty(handles.ROIs)
             msgbox('No ROIs Selected!')
