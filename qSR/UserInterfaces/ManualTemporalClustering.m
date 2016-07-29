@@ -22,7 +22,7 @@ function varargout = ManualTemporalClustering(varargin)
 
 % Edit the above text to modify the response to help ManualTemporalClustering
 
-% Last Modified by GUIDE v2.5 03-Jun-2016 10:16:14
+% Last Modified by GUIDE v2.5 29-Jul-2016 14:42:49
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -69,6 +69,10 @@ mainHandles=guidata(handles.mainObject);
 
 if ~isempty(mainHandles.ROIs)
     handles.current_ROI = 1;
+    
+    DisplayText = [num2str(handles.current_ROI),'/',num2str(length(mainHandles.ROIs))];
+    set(handles.CurrentROIID,'string',DisplayText)
+    
     handles.in_ROI = ((mainHandles.fXpos>mainHandles.ROIs{handles.current_ROI}(1))&(mainHandles.fXpos<(mainHandles.ROIs{handles.current_ROI}(1)+mainHandles.ROIs{handles.current_ROI}(3))))&((mainHandles.fYpos>mainHandles.ROIs{handles.current_ROI}(2))&(mainHandles.fYpos<(mainHandles.ROIs{handles.current_ROI}(2)+mainHandles.ROIs{handles.current_ROI}(4))));
 
     handles.WinArea=mainHandles.ROIs{1}(3)*mainHandles.ROIs{1}(4);
@@ -341,8 +345,10 @@ function LoadPrevious_Callback(hObject, eventdata, handles)
 mainHandles=guidata(handles.mainObject);
 
 handles.current_ROI = mod(handles.current_ROI-2,length(mainHandles.ROIs))+1;
-
 handles.in_ROI = ((mainHandles.fXpos>mainHandles.ROIs{handles.current_ROI}(1))&(mainHandles.fXpos<(mainHandles.ROIs{handles.current_ROI}(1)+mainHandles.ROIs{handles.current_ROI}(3))))&((mainHandles.fYpos>mainHandles.ROIs{handles.current_ROI}(2))&(mainHandles.fYpos<(mainHandles.ROIs{handles.current_ROI}(2)+mainHandles.ROIs{handles.current_ROI}(4))));
+
+DisplayText = [num2str(handles.current_ROI),'/',num2str(length(mainHandles.ROIs))];
+set(handles.CurrentROIID,'string',DisplayText)
 
 handles.WinArea=mainHandles.ROIs{handles.current_ROI}(3)*mainHandles.ROIs{handles.current_ROI}(4);
 guidata(hObject,handles)
@@ -359,7 +365,9 @@ mainHandles=guidata(handles.mainObject);
 handles.current_ROI = mod(handles.current_ROI,length(mainHandles.ROIs))+1;
 handles.in_ROI = ((mainHandles.fXpos>mainHandles.ROIs{handles.current_ROI}(1))&(mainHandles.fXpos<(mainHandles.ROIs{handles.current_ROI}(1)+mainHandles.ROIs{handles.current_ROI}(3))))&((mainHandles.fYpos>mainHandles.ROIs{handles.current_ROI}(2))&(mainHandles.fYpos<(mainHandles.ROIs{handles.current_ROI}(2)+mainHandles.ROIs{handles.current_ROI}(4))));
 
+DisplayText = [num2str(handles.current_ROI),'/',num2str(length(mainHandles.ROIs))];
+set(handles.CurrentROIID,'string',DisplayText)
+
 handles.WinArea=mainHandles.ROIs{handles.current_ROI}(3)*mainHandles.ROIs{handles.current_ROI}(4);
 guidata(hObject,handles)
 GraphUpdateCode(hObject,eventdata,handles)
-
