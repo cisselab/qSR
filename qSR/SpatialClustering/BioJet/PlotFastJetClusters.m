@@ -1,4 +1,4 @@
-function clusters=PlotFastJetClusters(Data,tree,cut_height,varargin)
+function clusters= PlotFastJetClusters(Data,tree,cut_height,varargin)
 
     % Modes of operation:
     %       Single Color vs. time colored
@@ -42,149 +42,120 @@ function clusters=PlotFastJetClusters(Data,tree,cut_height,varargin)
         end
     end
     
-    %% Cut Tree
+     %% Cut Tree
     
         clusters = CutTree(tree,cut_height);
         scaling_ratio=1.5;
         clusters_small = CutTree(tree,cut_height/scaling_ratio);
         clusters_large = CutTree(tree,cut_height*scaling_ratio);
         
-    %% Determine Clusters to Plot
-    switch plot_mode
-        case 'min_points'
-            for i = 1:max([clusters,clusters_small,clusters_large])
-                if sum(clusters==i)<min_points
-                    clusters(clusters==i)=0;
-                end
-                
-                if sum(clusters_small==i)<min_points
-                    clusters_small(clusters_small==i)=0;
-                end
-                
-                if sum(clusters_large==i)<min_points
-                    clusters_large(clusters_large==i)=0;
-                end
-            end
-            if colored
-                figure
-                
-                subplot(1,3,1)
-                plot(Data(:,2),Data(:,3),'.k')
-                hold on
-                colormat = [1-Data(clusters_small>0,1)/max(Data(clusters_small>0,1)),zeros(sum(clusters_small>0),1),Data(clusters_small>0,1)/max(Data(clusters_small>0,1))];
-                scatter(Data(clusters_small>0,2),Data(clusters_small>0,3),4,colormat)
-                title(['Length Scale:',num2str(cut_height/scaling_ratio)])
-                
-                subplot(1,3,2)
-                plot(Data(:,2),Data(:,3),'.k')
-                hold on
-                colormat = [1-Data(clusters>0,1)/max(Data(clusters>0,1)),zeros(sum(clusters>0),1),Data(clusters>0,1)/max(Data(clusters>0,1))];
-                scatter(Data(clusters>0,2),Data(clusters>0,3),4,colormat)
-                title(['Length Scale:',num2str(cut_height)])
-                
-                subplot(1,3,3)
-                plot(Data(:,2),Data(:,3),'.k')
-                hold on
-                colormat = [1-Data(clusters_large>0,1)/max(Data(clusters_large>0,1)),zeros(sum(clusters_large>0),1),Data(clusters_large>0,1)/max(Data(clusters_large>0,1))];
-                scatter(Data(clusters_large>0,2),Data(clusters_large>0,3),4,colormat)
-                title(['Length Scale:',num2str(cut_height*scaling_ratio)])
-            else
-                figure
-                subplot(1,3,1)
-                plot(Data(:,2),Data(:,3),'.k')
-                hold on
-                plot(Data(clusters_small>0,2),Data(clusters_small>0,3),'.r')
-                title(['Length Scale:',num2str(cut_height/scaling_ratio)])
-                
-                subplot(1,3,2)
-                plot(Data(:,2),Data(:,3),'.k')
-                hold on
-                plot(Data(clusters>0,2),Data(clusters>0,3),'.r')
-                title(['Length Scale:',num2str(cut_height)])
-                
-                subplot(1,3,3)
-                plot(Data(:,2),Data(:,3),'.k')
-                hold on
-                plot(Data(clusters_large>0,2),Data(clusters_large>0,3),'.r')
-                title(['Length Scale:',num2str(cut_height*scaling_ratio)])
-            end
-        case 'top_clusters'
-            size_dist=zeros(1,max([clusters,clusters_small,clusters_large]));
-            size_dist_small=zeros(1,max([clusters,clusters_small,clusters_large]));
-            size_dist_large=zeros(1,max([clusters,clusters_small,clusters_large]));
-            
-            for i = 1:max([clusters,clusters_small,clusters_large])
-                size_dist(i)=sum(clusters==i);
-                size_dist_small(i)=sum(clusters_small==i);
-                size_dist_large(i)=sum(clusters_large==i);
-            end
-            
-            [~,s_index]=sort(size_dist,'descend');
-            [~,s_index_small]=sort(size_dist_small,'descend');
-            [~,s_index_large]=sort(size_dist_large,'descend');
-            
-            plot_indices=false(size(clusters));
-            plot_indices_small=false(size(clusters_small));
-            plot_indices_large=false(size(clusters_large));
+    %% Trim Clusters
+        switch plot_mode
+            case 'min_points'
+                for i = 1:max([clusters,clusters_small,clusters_large])
+                    if sum(clusters==i)<min_points
+                        clusters(clusters==i)=0;
+                    end
 
-            for i = 1:num_clusters
-                plot_indices = or(plot_indices,clusters==s_index(i));
-                plot_indices_small = or(plot_indices_small,clusters==s_index_small(i));
-                plot_indices_large = or(plot_indices_large,clusters==s_index_large(i));
-            end
+                    if sum(clusters_small==i)<min_points
+                        clusters_small(clusters_small==i)=0;
+                    end
+
+                    if sum(clusters_large==i)<min_points
+                        clusters_large(clusters_large==i)=0;
+                    end
+                end
+            case 'top_clusters'
+                size_dist=zeros(1,max([clusters,clusters_small,clusters_large]));
+                size_dist_small=zeros(1,max([clusters,clusters_small,clusters_large]));
+                size_dist_large=zeros(1,max([clusters,clusters_small,clusters_large]));
+
+                for i = 1:max([clusters,clusters_small,clusters_large])
+                    size_dist(i)=sum(clusters==i);
+                    size_dist_small(i)=sum(clusters_small==i);
+                    size_dist_large(i)=sum(clusters_large==i);
+                end
+
+                [~,s_index]=sort(size_dist,'descend');
+                [~,s_index_small]=sort(size_dist_small,'descend');
+                [~,s_index_large]=sort(size_dist_large,'descend');
+
+                new_clusters=zeros(size(clusters));
+                new_clusters_small=zeros(size(clusters));
+                new_clusters_large=zeros(size(clusters));
+                
+                for i = 1:num_clusters
+                   new_clusters(clusters==s_index(i))=i;
+                   new_clusters_small(clusters_small==s_index_small(i))=i;
+                   new_clusters_large(clusters_large==s_index_large(i))=i;
+                end
+                
+                clusters=new_clusters;
+                clusters_small=new_clusters_small;
+                clusters_large=new_clusters_large;
+        end
+        
+        %% Plot Results
+        if colored
+            figure
             
-            if colored
-                
-                figure
-                
-                subplot(1,3,1)
-                plot(Data(:,2),Data(:,3),'.k')
-                hold on
-                colormat = [1-Data(plot_indices_small,1)/max(Data(plot_indices_small,1)),zeros(sum(plot_indices_small),1),Data(plot_indices_small,1)/max(Data(plot_indices_small,1))];
-                scatter(Data(plot_indices_small,2),Data(plot_indices_small,3),4,colormat)
-                title(['Length Scale:',num2str(cut_height/scaling_ratio)])
-                
-                subplot(1,3,2)
-                plot(Data(:,2),Data(:,3),'.k')
-                hold on
-                colormat = [1-Data(plot_indices,1)/max(Data(plot_indices,1)),zeros(sum(plot_indices),1),Data(plot_indices,1)/max(Data(plot_indices,1))];
-                scatter(Data(plot_indices,2),Data(plot_indices,3),4,colormat)
-                title(['Length Scale:',num2str(cut_height)])
-                
-                subplot(1,3,3)
-                plot(Data(:,2),Data(:,3),'.k')
-                hold on
-                colormat = [1-Data(plot_indices_large,1)/max(Data(plot_indices_large,1)),zeros(sum(plot_indices_large),1),Data(plot_indices_large,1)/max(Data(plot_indices_large,1))];
-                scatter(Data(plot_indices_large,2),Data(plot_indices_large,3),4,colormat)
-                title(['Length Scale:',num2str(cut_height*scaling_ratio)])
-                
-                
-            else
-               
-                
-                figure
-                subplot(1,3,1)
-                plot(Data(:,2),Data(:,3),'.k')
-                hold on
-                plot(Data(plot_indices_small,2),Data(plot_indices_small,3),'.r')
-                title(['Length Scale:',num2str(cut_height/scaling_ratio)])
-                
-                subplot(1,3,2)
-                plot(Data(:,2),Data(:,3),'.k')
-                hold on
-                plot(Data(plot_indices,2),Data(plot_indices,3),'.r')
-                title(['Length Scale:',num2str(cut_height)])
-                
-                subplot(1,3,3)
-                plot(Data(:,2),Data(:,3),'.k')
-                hold on
-                plot(Data(plot_indices_large,2),Data(plot_indices_large,3),'.r')
-                title(['Length Scale:',num2str(cut_height*scaling_ratio)])
-            end
-    end
-    
-    %% Plot Data
-    
-    
-    
-    
+            colormat = [1-Data(clusters>0,1)/max(Data(clusters>0,1)),zeros(sum(clusters>0),1),Data(clusters>0,1)/max(Data(clusters>0,1))];
+            scatter(Data(clusters>0,2),Data(clusters>0,3),49,colormat,'filled')
+            hold on
+            plot(Data(:,2),Data(:,3),'.','markersize',4,'color',[0.6,0.6,0.6])
+            
+            title(['Length Scale (nm):',num2str(cut_height)])
+            axis equal square
+            
+            figure
+
+            subplot(1,3,1)
+            
+            colormat = [1-Data(clusters_small>0,1)/max(Data(clusters_small>0,1)),zeros(sum(clusters_small>0),1),Data(clusters_small>0,1)/max(Data(clusters_small>0,1))];
+            scatter(Data(clusters_small>0,2),Data(clusters_small>0,3),49,colormat,'filled')
+            hold on
+            plot(Data(:,2),Data(:,3),'.','markersize',4,'color',[0.6,0.6,0.6])
+            title(['Length Scale (nm):',num2str(cut_height/scaling_ratio)])
+            axis equal square
+
+            subplot(1,3,2)
+            
+            colormat = [1-Data(clusters>0,1)/max(Data(clusters>0,1)),zeros(sum(clusters>0),1),Data(clusters>0,1)/max(Data(clusters>0,1))];
+            scatter(Data(clusters>0,2),Data(clusters>0,3),49,colormat,'filled')
+            hold on
+            plot(Data(:,2),Data(:,3),'.','markersize',4,'color',[0.6,0.6,0.6])
+            title(['Length Scale (nm):',num2str(cut_height)])
+            axis equal square
+
+            subplot(1,3,3)
+            
+            colormat = [1-Data(clusters_large>0,1)/max(Data(clusters_large>0,1)),zeros(sum(clusters_large>0),1),Data(clusters_large>0,1)/max(Data(clusters_large>0,1))];
+            scatter(Data(clusters_large>0,2),Data(clusters_large>0,3),49,colormat,'filled')
+            hold on
+            plot(Data(:,2),Data(:,3),'.','markersize',4,'color',[0.6,0.6,0.6])
+            title(['Length Scale (nm):',num2str(cut_height*scaling_ratio)])
+            axis equal square
+            
+        else
+            figure
+            
+            PlotClusterBackground(Data,clusters,1)
+            title(['Length Scale (nm):',num2str(cut_height)])
+            axis equal square
+            
+            figure
+            subplot(1,3,1)
+            PlotClusterBackground(Data,clusters_small,1)
+            title(['Length Scale (nm):',num2str(cut_height/scaling_ratio)])
+            axis equal square
+
+            subplot(1,3,2)
+            PlotClusterBackground(Data,clusters,1)
+            title(['Length Scale (nm):',num2str(cut_height)])
+            axis equal square
+
+            subplot(1,3,3)
+            PlotClusterBackground(Data,clusters_large,1)
+            title(['Length Scale (nm):',num2str(cut_height*scaling_ratio)])
+            axis equal square
+        end
