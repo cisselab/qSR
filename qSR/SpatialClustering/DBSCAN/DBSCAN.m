@@ -31,7 +31,7 @@ function [cluster_IDs,num_neighbors] = DBSCAN(data,lengthscale,nmin)
         cluster_IDs(in_cluster)=num_clusters;
         visited=or(visited,newly_visited);
     end
-    sum(noise)
+    
 end
 
 function [in_cluster,newly_visited]=build_cluster(data,i,nmin,neighborhood,N)
