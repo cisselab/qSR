@@ -22,7 +22,7 @@ function varargout = ManualTemporalClustering(varargin)
 
 % Edit the above text to modify the response to help ManualTemporalClustering
 
-% Last Modified by GUIDE v2.5 29-Jul-2016 14:42:49
+% Last Modified by GUIDE v2.5 29-Jul-2016 15:00:01
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -160,7 +160,17 @@ function Cluster_Cutoff_Input_Callback(hObject, eventdata, handles)
 % Hints: get(hObject,'String') returns contents of Cluster_Cutoff_Input as text
 %        str2double(get(hObject,'String')) returns contents of Cluster_Cutoff_Input as a double
 
-GraphUpdateCode(hObject,eventdata,handles)
+min_pts = str2num(get(handles.Cluster_Cutoff_Input,'String'));
+if isempty(min_pts)
+    set(handles.Cluster_Cutoff_Input,'String',2)
+    guidata(hObject,handles)
+    GraphUpdateCode(hObject,eventdata,handles)
+    
+    msgbox('Minimum Cluster Size should be a positive integer!')
+else
+    GraphUpdateCode(hObject,eventdata,handles)
+end
+
 
 % --- Executes on button press in FitTrace.
 function FitTrace_Callback(hObject, eventdata, handles)
@@ -182,7 +192,6 @@ mainHandles=guidata(handles.mainObject);
 mainHandles.st_clusters=RenumberClusters(handles.st_clusters);
 mainHandles.valid_st_clusters=true;
 guidata(handles.mainObject, mainHandles);
-
 
 % --- Executes on button press in Subsection_Selector.
 function Subsection_Selector_Callback(hObject, eventdata, handles)
@@ -218,7 +227,9 @@ function Cluster_Number_Selector_Callback(hObject, eventdata, handles)
 %        get(hObject,'Min') and get(hObject,'Max') to determine range of slider
 
 Number_Slider_Value = get(handles.Cluster_Number_Selector,'Value'); %Reads the value of Number slider, which was just adjusted.  
-set(handles.Cluster_Number_Display,'string',['Detection Sensitivity:',num2str(Number_Slider_Value)])
+set(handles.Cluster_Number_Display,'string',num2str(Number_Slider_Value))
+guidata(hObject,handles)
+
 GraphUpdateCode(hObject,eventdata,handles)
 
 function GraphUpdateCode(hObject,eventdata,handles)
@@ -371,3 +382,50 @@ set(handles.CurrentROIID,'string',DisplayText)
 handles.WinArea=mainHandles.ROIs{handles.current_ROI}(3)*mainHandles.ROIs{handles.current_ROI}(4);
 guidata(hObject,handles)
 GraphUpdateCode(hObject,eventdata,handles)
+
+function Cluster_Number_Display_Callback(hObject, eventdata, handles)
+% hObject    handle to Cluster_Number_Display (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of Cluster_Number_Display as text
+%        str2double(get(hObject,'String')) returns contents of Cluster_Number_Display as a double
+
+Number_Display_Value = str2num(get(handles.Cluster_Number_Display,'String'));
+
+if isempty(Number_Display_Value)
+    msgbox('Sensitivity must be a number between 0 and 1!')
+    Number_Slider_Value = get(handles.Cluster_Number_Selector,'Value');  
+    set(handles.Cluster_Number_Display,'string',num2str(Number_Slider_Value))
+    guidata(hObject,handles)
+    
+elseif Number_Display_Value <0
+    msgbox('Sensitivity must be a number between 0 and 1!')
+    Number_Slider_Value = get(handles.Cluster_Number_Selector,'Value');  
+    set(handles.Cluster_Number_Display,'string',num2str(Number_Slider_Value))
+    guidata(hObject,handles)
+    
+elseif Number_Display_Value > 1
+    msgbox('Sensitivity must be a number between 0 and 1!')
+    Number_Slider_Value = get(handles.Cluster_Number_Selector,'Value');  
+    set(handles.Cluster_Number_Display,'string',num2str(Number_Slider_Value))
+    guidata(hObject,handles)
+    
+else
+    set(handles.Cluster_Number_Selector,'Value',Number_Display_Value)
+    guidata(hObject,handles)
+
+    GraphUpdateCode(hObject,eventdata,handles)
+end
+
+% --- Executes during object creation, after setting all properties.
+function Cluster_Number_Display_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to Cluster_Number_Display (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
