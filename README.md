@@ -3,14 +3,14 @@ A software package for quantitative analysis of single molecule localization mic
 
 Pair Correlation Analysis
 
-For the pair correlation analysis, our software makes use of code developed by another group. The function get_autocorr is made available in the publication cited below. The code should be downloaded, renamed as get_autocorr.m and added to the MATLAB search path.
+For the pair correlation analysis, our software makes use of code developed by Veatch et al. The function get_autocorr is made available in the publication cited below. The code should be downloaded, renamed as get_autocorr.m and added to the MATLAB search path.
 
 Sarah L. Veatch et al. Correlation Functions Quantify Super-Resolution Images and Estimate Apparent Clustering Due to Over-Counting. PLOS ONE. 27 Feb 2012 DOI: 10.1371/journal.pone.0031457
 
 
-BioJets Hierarchical Clustering
+FastJet Hierarchical Clustering
 
-For Hierarchical Clustering, our software makes use of code developed by another group. We make use of the fjcore distribution of fastjet, a software developed by the particle physics community for jet finding and analysis at colliders. 
+To perform FastJet Hierarchical Clustering, the FastJet code must first be compiled. qSR uses the fjcore distibution of FastJet, version 3.2.0, a software package developed by the particle physics community for jet finding and analysis at colliders.
 
                      FastJet release 3.2.0 [fjcore]
                  M. Cacciari, G.P. Salam and G. Soyez                  
@@ -25,9 +25,8 @@ For Hierarchical Clustering, our software makes use of code developed by another
  and 3rd party plugin jet algorithms. See COPYING file for details.
 
 To use the Hierarchical Clustering feature, 
-  1) Compile the FastJetTree.cc code. 
+  Compile the FastJetTree.cc code. 
   
-  For Mac, this can be done using g++. cd into the qSR/SpatialClustering/BioJet/FJCore/fjcore-3.2.0/ and call
+  For Unix systems, this can be done using g++. cd into the qSR/SpatialClustering/BioJet/FJCore/fjcore-3.2.0/ and call
   g++ -O BioJetsTree.cc fjcore.cc -o BioJetsTree
-  
-  2) Edit the 4th line of BioJetTree.m to give the full path to where BioJetsTree has been compiled on your computer. 
+
