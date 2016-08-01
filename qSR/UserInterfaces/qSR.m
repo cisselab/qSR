@@ -108,6 +108,7 @@ if filename ~= 0
     handles.YposRaw=YposRaw;
     handles.Frames=Frames;
     handles.Intensity=Intensity;
+    
     guidata(hObject, handles);
 
     AdjustPixelSize(hObject,eventdata,handles)    
@@ -219,38 +220,47 @@ if isfield(handles,'XposRaw')
     figure
     PlotPointillist(hObject,handles)
 
-    FreehandROIhandle = imfreehand; %Allows the user to draw a boundary for the nucleus
-    handles.FreehandROI = getPosition(FreehandROIhandle); %Returns an ordered list of the x and y coordinates that defines the boundary.
-    px_size=str2num(get(handles.pixel_size,'String'));
-    handles.FreehandROIpx=handles.FreehandROI/px_size;
-
-    handles.NuclearArea = polyarea(handles.FreehandROI(:,1),handles.FreehandROI(:,2));
-
-    InNucleus = inpolygon(handles.Xposnm,handles.Yposnm,handles.FreehandROI(:,1),handles.FreehandROI(:,2));
-
-    Times=1:max(handles.Frames);
-    Counts = zeros(1,length(Times));
-    for i = Times
-        Counts(i)=sum(handles.Frames(InNucleus)==i);
+    try 
+        FreehandROIhandle = imfreehand; %Allows the user to draw a boundary for the nucleus
+        FreehandROI = getPosition(FreehandROIhandle); %Returns an ordered list of the x and y coordinates that defines the boundary.
     end
-    CumulativeCounts = cumsum(Counts);
+    
+    if exist('FreehandROI','var')
+        handles.FreehandROI=FreehandROI;
+        px_size=str2num(get(handles.pixel_size,'String'));
+        handles.FreehandROIpx=handles.FreehandROI/px_size;
 
-    modelfnhandle = @(params,x)(params(1)*(1-exp(-x/params(2)))+params(3)*x); %Assumes an exonential decay of detection rate, and a constant false positive rate
-    fitParams = nlinfit(Times,CumulativeCounts,modelfnhandle,[length(handles.Frames),0.5,0]);
+        handles.NuclearArea = polyarea(handles.FreehandROI(:,1),handles.FreehandROI(:,2));
 
-    figure
-    plot(Times,modelfnhandle(fitParams,Times),'c')
-    hold on
-    plot(Times,CumulativeCounts,'r')
-    xlabel('Time (Frames)')
-    ylabel('Cumulative Localizations')
-    legend('Fit Data','Raw Data')
-    drawnow
+        InNucleus = inpolygon(handles.Xposnm,handles.Yposnm,handles.FreehandROI(:,1),handles.FreehandROI(:,2));
 
-    handles.fitParams = fitParams;
-    guidata(hObject, handles);
+        Times=1:max(handles.Frames);
+        Counts = zeros(1,length(Times));
+        for i = Times
+            Counts(i)=sum(handles.Frames(InNucleus)==i);
+        end
+        CumulativeCounts = cumsum(Counts);
 
-    SetfPosVectors(hObject,eventdata,handles)
+        modelfnhandle = @(params,x)(params(1)*(1-exp(-x/params(2)))+params(3)*x); %Assumes an exonential decay of detection rate, and a constant false positive rate
+        fitParams = nlinfit(Times,CumulativeCounts,modelfnhandle,[length(handles.Frames),0.5,0]);
+
+        figure
+        plot(Times,modelfnhandle(fitParams,Times),'c')
+        hold on
+        plot(Times,CumulativeCounts,'r')
+        xlabel('Time (Frames)')
+        ylabel('Cumulative Localizations')
+        legend('Fit Data','Raw Data')
+        drawnow
+
+        handles.fitParams = fitParams;
+        guidata(hObject, handles);
+
+        SetfPosVectors(hObject,eventdata,handles)
+    else
+        msgbox('Window closed before the user selected a nucleus!')
+    end
+  
 else
     msgbox('You must first load data!')
 end
@@ -976,8 +986,6 @@ function SetfPosVectors(hObject,eventdata,handles)
                     handles.fIntensity = handles.Intensity(InNucleus);
                     guidata(hObject, handles);
                 case 'iso'
-                    %Add progress bar
-                    display('Add Progress Bar')
 
                     threshold = str2num(get(handles.IsoLengthScale,'String'));
                     handles.isolated = IsolatedDetectionFilter(handles.Frames,handles.Xposnm,handles.Yposnm,threshold);
