@@ -87,28 +87,31 @@ function LoadData_Callback(hObject, eventdata, handles)
 
 %% Load Data
 [filename,dirName]=uigetfile('*.*','Select the Cell Data');
-handles.filename = filename;
-handles.directory = dirName;
 
-[Frames,XposRaw,YposRaw,Intensity]=ReadDataFile([dirName,filename],handles.filetype,hObject,handles);
+if filename ~= 0
+    handles.filename = filename;
+    handles.directory = dirName;
 
-%% Initialize Variables and Update Handles
-% handles.filter = true(1,length(Frames)); %Initialize for later use.
-% handles.fitParams = [0,0,0]; %Initialize Variables
-% handles.NuclearArea = 1;
-% handles.FreehandROI = [];
-% handles.InNucleus=true(1,length(Frames));
-% handles.MinClusterSize=2;
-% handles.ClusterIDs = zeros(1,length(Frames),'uint16');
-% handles.HaveLoadedAnnotation = false;
+    [Frames,XposRaw,YposRaw,Intensity]=ReadDataFile([dirName,filename],handles.filetype,hObject,handles);
 
-handles.XposRaw=XposRaw;
-handles.YposRaw=YposRaw;
-handles.Frames=Frames;
-handles.Intensity=Intensity;
-guidata(hObject, handles);
+    %% Initialize Variables and Update Handles
+    % handles.filter = true(1,length(Frames)); %Initialize for later use.
+    % handles.fitParams = [0,0,0]; %Initialize Variables
+    % handles.NuclearArea = 1;
+    % handles.FreehandROI = [];
+    % handles.InNucleus=true(1,length(Frames));
+    % handles.MinClusterSize=2;
+    % handles.ClusterIDs = zeros(1,length(Frames),'uint16');
+    % handles.HaveLoadedAnnotation = false;
 
-AdjustPixelSize(hObject,eventdata,handles)
+    handles.XposRaw=XposRaw;
+    handles.YposRaw=YposRaw;
+    handles.Frames=Frames;
+    handles.Intensity=Intensity;
+    guidata(hObject, handles);
+
+    AdjustPixelSize(hObject,eventdata,handles)    
+end
 
 % --- Executes on button press in filetype_SRL.
 function filetype_SRL_Callback(hObject, eventdata, handles)
@@ -595,6 +598,10 @@ if isfield(handles,'XposRaw')
     rectangle = imrect;
     rectangleCorners = getPosition(rectangle);
     handles.ROIs{end+1}=rectangleCorners;
+    if isfield(handles,'time_cluster_parameters')
+        handles.time_cluster_parameters.sensitivity(end+1)=nan;
+        handles.time_cluster_parameters.min_size(end+1)=nan;
+    end
     guidata(hObject,handles)
 else
     msgbox('You must first load data!')
@@ -626,6 +633,10 @@ if isfield(handles,'XposRaw')
             rectangleCorners = getPosition(rectangle);
             delete_indices = ROIsInBox(handles.ROIs,rectangleCorners);
             handles.ROIs(delete_indices)=[];
+            if isfield(handles,'time_cluster_parameters')
+                handles.time_cluster_parameters.sensitivity(delete_indices)=[];
+                handles.time_cluster_parameters.min_size(delete_indices)=[];
+            end
             guidata(hObject,handles)
             hold off
             PlotPointillist_Callback(hObject, eventdata, handles)
