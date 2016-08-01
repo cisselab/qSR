@@ -96,6 +96,29 @@ if ~isempty(mainHandles.ROIs)
     handles.X = X;
     handles.Y = Y;
     
+    if isfield(mainHandles,'time_cluster_parameters')
+        handles.parameters.min_size=mainHandles.time_cluster_parameters.min_size;
+        handles.parameters.sensitivity=mainHandles.time_cluster_parameters.sensitivity;
+        
+        if isnan(handles.parameters.sensitivity(handles.current_ROI))
+            Number_Slider_Value = get(handles.Cluster_Number_Selector,'Value');   
+            handles.parameters.sensitivity(handles.current_ROI)=Number_Slider_Value;
+
+            min_pts = str2num(get(handles.Cluster_Cutoff_Input,'String'));
+            handles.parameters.min_size(handles.current_ROI)=min_pts;
+        else
+            set(handles.Cluster_Number_Display,'string',num2str(handles.parameters.sensitivity(handles.current_ROI)))
+            set(handles.Cluster_Number_Selector,'Value',handles.parameters.sensitivity(handles.current_ROI))
+            set(handles.Cluster_Cutoff_Input,'String',num2str(handles.parameters.min_size(handles.current_ROI)))
+        end
+        
+        GraphUpdateCode(hObject,eventdata,handles)
+    else
+        handles.parameters.min_size=nan(1,length(mainHandles.ROIs));
+        handles.parameters.sensitivity=nan(1,length(mainHandles.ROIs));
+    end
+    
+    
 else
     msgbox('You must first select ROIs!')
 end
@@ -161,13 +184,16 @@ function Cluster_Cutoff_Input_Callback(hObject, eventdata, handles)
 %        str2double(get(hObject,'String')) returns contents of Cluster_Cutoff_Input as a double
 
 min_pts = str2num(get(handles.Cluster_Cutoff_Input,'String'));
+
 if isempty(min_pts)
     set(handles.Cluster_Cutoff_Input,'String',2)
+    handles.parameters.min_size(handles.current_ROI)=min_pts;
     guidata(hObject,handles)
     GraphUpdateCode(hObject,eventdata,handles)
     
     msgbox('Minimum Cluster Size should be a positive integer!')
 else
+    handles.parameters.min_size(handles.current_ROI)=min_pts;
     GraphUpdateCode(hObject,eventdata,handles)
 end
 
@@ -191,6 +217,10 @@ function Save_Data_Callback(hObject, eventdata, handles)
 mainHandles=guidata(handles.mainObject);
 mainHandles.st_clusters=RenumberClusters(handles.st_clusters);
 mainHandles.valid_st_clusters=true;
+
+mainHandles.time_cluster_parameters.sensitivity=handles.parameters.sensitivity;
+mainHandles.time_cluster_parameters.min_size=handles.parameters.min_size;
+
 guidata(handles.mainObject, mainHandles);
 
 % --- Executes on button press in Subsection_Selector.
@@ -228,6 +258,7 @@ function Cluster_Number_Selector_Callback(hObject, eventdata, handles)
 
 Number_Slider_Value = get(handles.Cluster_Number_Selector,'Value'); %Reads the value of Number slider, which was just adjusted.  
 set(handles.Cluster_Number_Display,'string',num2str(Number_Slider_Value))
+handles.parameters.sensitivity(handles.current_ROI)=Number_Slider_Value;
 guidata(hObject,handles)
 
 GraphUpdateCode(hObject,eventdata,handles)
@@ -361,6 +392,18 @@ handles.in_ROI = ((mainHandles.fXpos>mainHandles.ROIs{handles.current_ROI}(1))&(
 DisplayText = [num2str(handles.current_ROI),'/',num2str(length(mainHandles.ROIs))];
 set(handles.CurrentROIID,'string',DisplayText)
 
+if isnan(handles.parameters.sensitivity(handles.current_ROI))
+    Number_Slider_Value = get(handles.Cluster_Number_Selector,'Value');   
+    handles.parameters.sensitivity(handles.current_ROI)=Number_Slider_Value;
+    
+    min_pts = str2num(get(handles.Cluster_Cutoff_Input,'String'));
+    handles.parameters.min_size(handles.current_ROI)=min_pts;
+else
+    set(handles.Cluster_Number_Display,'string',num2str(handles.parameters.sensitivity(handles.current_ROI)))
+    set(handles.Cluster_Number_Selector,'Value',handles.parameters.sensitivity(handles.current_ROI))
+    set(handles.Cluster_Cutoff_Input,'String',num2str(handles.parameters.min_size(handles.current_ROI)))
+end
+
 handles.WinArea=mainHandles.ROIs{handles.current_ROI}(3)*mainHandles.ROIs{handles.current_ROI}(4);
 guidata(hObject,handles)
 GraphUpdateCode(hObject,eventdata,handles)
@@ -378,6 +421,18 @@ handles.in_ROI = ((mainHandles.fXpos>mainHandles.ROIs{handles.current_ROI}(1))&(
 
 DisplayText = [num2str(handles.current_ROI),'/',num2str(length(mainHandles.ROIs))];
 set(handles.CurrentROIID,'string',DisplayText)
+
+if isnan(handles.parameters.sensitivity(handles.current_ROI))
+    Number_Slider_Value = get(handles.Cluster_Number_Selector,'Value');   
+    handles.parameters.sensitivity(handles.current_ROI)=Number_Slider_Value;
+    
+    min_pts = str2num(get(handles.Cluster_Cutoff_Input,'String'));
+    handles.parameters.min_size(handles.current_ROI)=min_pts;
+else
+    set(handles.Cluster_Number_Display,'string',num2str(handles.parameters.sensitivity(handles.current_ROI)))
+    set(handles.Cluster_Number_Selector,'Value',handles.parameters.sensitivity(handles.current_ROI))
+    set(handles.Cluster_Cutoff_Input,'String',num2str(handles.parameters.min_size(handles.current_ROI)))
+end
 
 handles.WinArea=mainHandles.ROIs{handles.current_ROI}(3)*mainHandles.ROIs{handles.current_ROI}(4);
 guidata(hObject,handles)
@@ -413,6 +468,9 @@ elseif Number_Display_Value > 1
     
 else
     set(handles.Cluster_Number_Selector,'Value',Number_Display_Value)
+    
+    Number_Slider_Value = get(handles.Cluster_Number_Selector,'Value'); 
+    handles.parameters.sensitivity(handles.current_ROI)=Number_Slider_Value;
     guidata(hObject,handles)
 
     GraphUpdateCode(hObject,eventdata,handles)
