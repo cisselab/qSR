@@ -11,10 +11,15 @@ function [cluster_IDs,num_neighbors] = DBSCAN(data,lengthscale,nmin)
     visited = false(1,N);
     cluster_IDs = zeros(1,N);
     [neighborhood,num_neighbors]=find_neighbors(data,lengthscale);
+    progress_bar=waitbar(0,'Building clusters');
     for i = 1:N
         if mod(i,1000)==0
+            if ishandle(progress_bar)
+                waitbar(i/N,progress_bar,'Building clusters')
+            end
             display(['Cluster Building Progress: ',num2str(i/N*100),'%'])
         end
+        
             
         if visited(i)
             continue
@@ -30,6 +35,10 @@ function [cluster_IDs,num_neighbors] = DBSCAN(data,lengthscale,nmin)
         [in_cluster,newly_visited]=build_cluster(data,i,nmin,neighborhood,N);
         cluster_IDs(in_cluster)=num_clusters;
         visited=or(visited,newly_visited);
+    end
+    
+    if ishandle(progress_bar)
+        close(progress_bar)
     end
     
 end
@@ -63,13 +72,20 @@ function [neighborhood,num_neighbors]=find_neighbors(data,lengthscale)
     sequence=1:N;
     neighborhood=cell(1,N);
     num_neighbors=zeros(1,N);
+    progress_bar=waitbar(0,'Finding neighbors');
     for n =1:N
         if mod(n,1000)==0
-            display(['Neighbor Finding Progress: ',num2str(n/N*100),'%'])
+            if ishandle(progress_bar)
+                waitbar(n/N,progress_bar,'Finding neighbors')
+            end
         end
         one_reachable = in_region(data,n,lengthscale);
         neighborhood{n}=sequence(one_reachable);
         num_neighbors(n)=length(neighborhood{n});
+    end
+    
+    if ishandle(progress_bar)
+        close(progress_bar)
     end
     
 end
