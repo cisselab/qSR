@@ -1,5 +1,7 @@
 function IsAnIsolatedDetection = IsolatedDetectionFilter(Frames,Xpos,Ypos,threshold)
 
+    progress_handle=waitbar(0,'Running Isolation Filter');
+
     %%% We will keep all data points from the first, and last frames. Therefore,
     %%% the first order of business is to find where the second frame starts, 
     %%% and the second to last frame ends. 
@@ -23,7 +25,14 @@ function IsAnIsolatedDetection = IsolatedDetectionFilter(Frames,Xpos,Ypos,thresh
     %%% Deleted.
     IsAnIsolatedDetection = zeros(1,length(Frames));
     
+    
     for i = starting_index:ending_index
+        if mod(i,round(ending_index/100))==0
+            if ishandle(progress_handle)
+                progress_handle=waitbar(i/ending_index,progress_handle,'Running Isolation Filter');
+            end
+        end
+        
         CurrentFrame = Frames(i);
         PreviousFrame = CurrentFrame-1;
         NextFrame = CurrentFrame+1;
@@ -51,4 +60,8 @@ function IsAnIsolatedDetection = IsolatedDetectionFilter(Frames,Xpos,Ypos,thresh
         end
     end
     IsAnIsolatedDetection = logical(IsAnIsolatedDetection);
+    if ishandle(progress_handle)
+        close(progress_handle)
+    end
 end
+
