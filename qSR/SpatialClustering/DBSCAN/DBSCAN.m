@@ -17,7 +17,6 @@ function [cluster_IDs,num_neighbors] = DBSCAN(data,lengthscale,nmin)
             if ishandle(progress_bar)
                 waitbar(i/N,progress_bar,'Building clusters')
             end
-            display(['Cluster Building Progress: ',num2str(i/N*100),'%'])
         end
         
             
