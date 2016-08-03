@@ -635,14 +635,20 @@ if isfield(handles,'XposRaw')
     set(handles.PlotROIS,'Value',1)
     guidata(hObject,handles)
     PlotPointillist_Callback(hObject, eventdata, handles)
-    rectangle = imrect;
-    rectangleCorners = getPosition(rectangle);
-    handles.ROIs{end+1}=rectangleCorners;
-    if isfield(handles,'time_cluster_parameters')
-        handles.time_cluster_parameters.sensitivity(end+1)=nan;
-        handles.time_cluster_parameters.min_size(end+1)=nan;
+    
+    try
+        rectangle = imrect;
+        rectangleCorners = getPosition(rectangle);
     end
-    guidata(hObject,handles)
+    
+    if exist('rectangleCorners','var')
+        handles.ROIs{end+1}=rectangleCorners;
+        if isfield(handles,'time_cluster_parameters')
+            handles.time_cluster_parameters.sensitivity(end+1)=nan;
+            handles.time_cluster_parameters.min_size(end+1)=nan;
+        end
+        guidata(hObject,handles) 
+    end    
 else
     msgbox('You must first load data!')
 end
@@ -669,17 +675,26 @@ if isfield(handles,'XposRaw')
             set(handles.PlotROIS,'Value',1)
             guidata(hObject,handles)
             PlotPointillist_Callback(hObject, eventdata, handles)
-            rectangle = imrect;
-            rectangleCorners = getPosition(rectangle);
-            delete_indices = ROIsInBox(handles.ROIs,rectangleCorners);
-            handles.ROIs(delete_indices)=[];
-            if isfield(handles,'time_cluster_parameters')
-                handles.time_cluster_parameters.sensitivity(delete_indices)=[];
-                handles.time_cluster_parameters.min_size(delete_indices)=[];
+            
+            try
+                rectangle = imrect;
+                rectangleCorners = getPosition(rectangle);
             end
-            guidata(hObject,handles)
-            hold off
-            PlotPointillist_Callback(hObject, eventdata, handles)
+            
+            if exist('rectangleCorners','var')
+                delete_indices = ROIsInBox(handles.ROIs,rectangleCorners);
+                handles.ROIs(delete_indices)=[];
+                if isfield(handles,'time_cluster_parameters')
+                    handles.time_cluster_parameters.sensitivity(delete_indices)=[];
+                    handles.time_cluster_parameters.min_size(delete_indices)=[];
+                end
+                guidata(hObject,handles)
+                hold off
+                PlotPointillist_Callback(hObject, eventdata, handles)
+            else
+                msgbox('Window closed before user selected ROIs for deletion!')
+            end
+            
         end
     else
         msgbox('No ROIs Selected!')
