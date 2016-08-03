@@ -59,6 +59,8 @@ handles.filetype='SRL';
 handles.valid_sp_clusters=false;
 handles.valid_st_clusters=false;
 
+handles.InitialHandles=handles;
+
 % Update handles structure
 guidata(hObject, handles);
 
@@ -89,6 +91,12 @@ function LoadData_Callback(hObject, eventdata, handles)
 [filename,dirName]=uigetfile('*.*','Select the Cell Data');
 
 if filename ~= 0
+    
+    handles=handles.InitialHandles;
+    handles.InitialHandles=handles;
+    set(handles.RestrictToNuclear,'value',0)
+    set(handles.RawData,'value',1)
+    
     handles.filename = filename;
     handles.directory = dirName;
 
@@ -177,18 +185,15 @@ function LoadWorkSpace_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-if isfield(handles,'directory')
-    current_directory=cd;
-    cd(handles.directory)
-    filename=uigetfile;
-    if ischar(filename)
-        handles=load(filename);
-        guidata(hObject,handles)
-    end
-    cd(current_directory)
-else
-    
+gui_handle=gcf;
+
+filename=uigetfile;
+if ischar(filename)
+    handles=load(filename);
+    guidata(hObject,handles)
+    close(gui_handle)
 end
+
 
 % --- Executes on button press in SaveWorkSpace.
 function SaveWorkSpace_Callback(hObject, eventdata, handles)
