@@ -193,3 +193,12 @@ mainHandles=guidata(handles.mainObject);
 data=[mainHandles.fXpos',mainHandles.fYpos']; %mainHandles.fFrames
 [handles.cluster_IDs,~] = DBSCAN(data,lengthscale,nmin);
 guidata(hObject,handles)
+
+if isfield(handles,'cluster_IDs')
+    mainHandles=guidata(handles.mainObject);
+    data=[mainHandles.fXpos',mainHandles.fYpos'];
+    ids=handles.cluster_IDs;
+    plot_2d_clusters(data,ids)
+else
+    msgbox('You must first run the analysis!')
+end
