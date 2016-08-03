@@ -111,7 +111,8 @@ if filename ~= 0
     
     guidata(hObject, handles);
 
-    AdjustPixelSize(hObject,eventdata,handles)    
+    handles.AdjustPixelSize(hObject,eventdata,handles);
+    guidata(hObject,handles)
 end
 
 % --- Executes on button press in filetype_SRL.
@@ -165,7 +166,8 @@ elseif pixel_size <=0
     set(handles.pixel_size,'String',160)
     guidata(hObject,handles)
 end
-AdjustPixelSize(hObject,eventdata,handles)
+handles=AdjustPixelSize(hObject,eventdata,handles);
+guidata(hObject,handles)
 
 % --- Executes on button press in LoadWorkSpace.
 function LoadWorkSpace_Callback(hObject, eventdata, handles)
@@ -254,9 +256,17 @@ if isfield(handles,'XposRaw')
         drawnow
 
         handles.fitParams = fitParams;
+        
+        set(handles.RestrictToNuclear,'value',1)
+        
         guidata(hObject, handles);
 
-        SetfPosVectors(hObject,eventdata,handles)
+        handles = SetfPosVectors(hObject,eventdata,handles);
+        guidata(hObject,handles)
+        
+        figure
+        PlotPointillist(hObject,handles)
+        
     else
         msgbox('Window closed before the user selected a nucleus!')
     end
@@ -276,10 +286,16 @@ function RestrictToNuclear_Callback(hObject, eventdata, handles)
 if isfield(handles,'RestrictToNuclear')
     if get(handles.RestrictToNuclear,'Value')
         if isfield(handles,'FreehandROI')
-            SetfPosVectors(hObject,eventdata,handles)
+            handles = SetfPosVectors(hObject,eventdata,handles);
+            guidata(hObject,handles)
         else
+            set(handles.RestrictToNuclear,'value',0)
+            guidata(hObject,handles)
             msgbox('You must first select the Nucleus!')
         end
+    else
+        handles = SetfPosVectors(hObject,eventdata,handles);
+        guidata(hObject,handles)
     end
 end
 
@@ -293,7 +309,8 @@ function RawData_Callback(hObject, eventdata, handles)
 
 handles.which_filter = 'raw';
 guidata(hObject,handles)
-SetfPosVectors(hObject,eventdata,handles)
+handles=SetfPosVectors(hObject,eventdata,handles);
+guidata(hObject,handles)
 
 % --- Executes on button press in IsolationFilter.
 function IsolationFilter_Callback(hObject, eventdata, handles)
@@ -305,7 +322,8 @@ function IsolationFilter_Callback(hObject, eventdata, handles)
 
 handles.which_filter = 'iso';
 guidata(hObject,handles)
-SetfPosVectors(hObject,eventdata,handles)
+handles=SetfPosVectors(hObject,eventdata,handles);
+guidata(hObject,handles)
     
 function IsoLengthScale_Callback(hObject, eventdata, handles)
 % hObject    handle to IsoLengthScale (see GCBO)
@@ -327,7 +345,8 @@ elseif length_scale <=0
 else
     switch handles.which_filter
         case 'iso'
-            SetfPosVectors(hObject,eventdata,handles)
+            handles=SetfPosVectors(hObject,eventdata,handles);
+            guidata(hObject,handles)
         otherwise
     end
 end
@@ -342,7 +361,8 @@ function QuickMerge_Callback(hObject, eventdata, handles)
 
 handles.which_filter = 'quick';
 guidata(hObject,handles)
-SetfPosVectors(hObject,eventdata,handles)
+handles = SetfPosVectors(hObject,eventdata,handles);
+guidata(hObject,handles)
 
 function QuickMergeLengthScale_Callback(hObject, eventdata, handles)
 % hObject    handle to QuickMergeLengthScale (see GCBO)
@@ -364,7 +384,8 @@ elseif length_scale <=0
 else
     switch handles.which_filter
         case 'quick'
-            SetfPosVectors(hObject,eventdata,handles)
+            handles=SetfPosVectors(hObject,eventdata,handles);
+            guidata(hObject,handles)
         otherwise
     end
 end
@@ -391,7 +412,8 @@ elseif dark_tolerance <=0
 else
     switch handles.which_filter
         case 'quick'
-            SetfPosVectors(hObject,eventdata,handles)
+            handles=SetfPosVectors(hObject,eventdata,handles);
+            guidata(hObject,handles)
         otherwise
     end
 end
@@ -416,7 +438,8 @@ elseif min_pts <=0
 else
     switch handles.which_filter
         case 'quick'
-            SetfPosVectors(hObject,eventdata,handles)
+            handles=SetfPosVectors(hObject,eventdata,handles);
+            guidata(hObject,handles)
         otherwise
     end
 end
@@ -935,7 +958,7 @@ function [Times,Xpos,Ypos,Intensity]=ReadDataFile(filename,filetype,hObject,hand
         end
     end
 
-function AdjustPixelSize(hObject,eventdata,handles)
+function handles = AdjustPixelSize(hObject,eventdata,handles)
     % Adjusts the vectors containing the raw x and y positions in units of
     % nanometers (Xposnm and Yposnm) using the raw x and y positions in
     % units of pixels (XposRaw and YposRaw) and the pixel size stated in
@@ -952,12 +975,14 @@ function AdjustPixelSize(hObject,eventdata,handles)
 
         guidata(hObject, handles);
 
-        SetfPosVectors(hObject,eventdata,handles)
+        handles = SetfPosVectors(hObject,eventdata,handles); 
+        guidata(hObject,handles)
+        
     else
         msgbox('You must first load data!')
     end
         
-function SetfPosVectors(hObject,eventdata,handles)
+function handles = SetfPosVectors(hObject,eventdata,handles)
     % Checks for what type of filter should be applied from the
     % pre-process / filter data box and adjusts the filtered positions
     % (fXpos and fYpos) accordingly.
