@@ -86,16 +86,20 @@ mainHandles=guidata(handles.mainObject);
 if isfield(mainHandles,'pointillist_handle')
     if ishandle(mainHandles.pointillist_handle)
         figure(mainHandles.pointillist_handle)
+        axis auto
+        pointillist([mainHandles.fXpos;mainHandles.fYpos])
     else
         mainHandles.pointillist_handle = figure;
         guidata(handles.mainObject, mainHandles);
         pointillist([mainHandles.fXpos;mainHandles.fYpos])
+
     end
     
 else
     mainHandles.pointillist_handle = figure;
     guidata(handles.mainObject, mainHandles);
     pointillist([mainHandles.fXpos;mainHandles.fYpos])
+
 end
 
 try
