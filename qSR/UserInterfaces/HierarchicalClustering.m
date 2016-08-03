@@ -233,7 +233,7 @@ CurrentState = get(handles.ClusterDeterminant,'Value');
 
 switch DeterminantCell{CurrentState}
     case 'Minimum Size'
-        set(handles.DeterminantText,'String','Minimum Size')
+        set(handles.DeterminantText,'String','Minimum Size (Detections)')
     case 'Fixed Number'
         set(handles.DeterminantText,'String','Number of Clusters')
 end
