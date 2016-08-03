@@ -22,7 +22,7 @@ function varargout = qSR(varargin)
 
 % Edit the above text to modify the response to help qSR
 
-% Last Modified by GUIDE v2.5 26-Jul-2016 15:05:17
+% Last Modified by GUIDE v2.5 03-Aug-2016 13:06:00
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -111,7 +111,9 @@ if filename ~= 0
     
     guidata(hObject, handles);
 
-    handles.AdjustPixelSize(hObject,eventdata,handles);
+    handles=AdjustPixelSize(hObject,eventdata,handles);
+    
+    set(handles.FileDisplay,'String',['Data File: ',handles.directory,handles.filename])
     guidata(hObject,handles)
 end
 
@@ -1222,5 +1224,3 @@ function RenderingPrecision_CreateFcn(hObject, eventdata, handles)
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
-
-
