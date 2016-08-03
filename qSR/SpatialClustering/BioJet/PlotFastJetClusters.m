@@ -138,12 +138,6 @@ function clusters= PlotFastJetClusters(Data,tree,cut_height,varargin)
             
         else
             figure
-            
-            PlotClusterBackground(Data,clusters,1)
-            title(['Length Scale (nm):',num2str(cut_height)])
-            axis equal square
-            
-            figure
             subplot(1,3,1)
             PlotClusterBackground(Data,clusters_small,1)
             title(['Length Scale (nm):',num2str(cut_height/scaling_ratio)])
@@ -158,4 +152,11 @@ function clusters= PlotFastJetClusters(Data,tree,cut_height,varargin)
             PlotClusterBackground(Data,clusters_large,1)
             title(['Length Scale (nm):',num2str(cut_height*scaling_ratio)])
             axis equal square
+            
+            figure
+            
+            PlotClusterBackground(Data,clusters,1)
+            title(['Length Scale (nm):',num2str(cut_height)])
+            axis equal square
+            
         end
