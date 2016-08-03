@@ -98,10 +98,20 @@ else
     pointillist([mainHandles.fXpos;mainHandles.fYpos])
 end
 
-handles.FreehandROICoordinateList = DrawFreehandRegion; %Returns an ordered list of the x and y coordinates that defines the boundary.
-handles.included_points = inpolygon(mainHandles.fXpos,mainHandles.fYpos,handles.FreehandROICoordinateList(:,1),handles.FreehandROICoordinateList(:,2)); %Returns a logical defining which points lie within the ROI. 
+try
+    FreehandROICoordinateList = DrawFreehandRegion; %Returns an ordered list of the x and y coordinates that defines the boundary.
+end
 
-guidata(hObject,handles)
+if exist('FreehandROICoordinateList','var')
+    handles.FreehandROICoordinateList=FreehandROICoordinateList;
+    handles.included_points = inpolygon(mainHandles.fXpos,mainHandles.fYpos,handles.FreehandROICoordinateList(:,1),handles.FreehandROICoordinateList(:,2)); %Returns a logical defining which points lie within the ROI. 
+
+    guidata(hObject,handles)
+
+    msgbox('Region successfully selected!')
+else
+    msgbox('Window closed before user selected a region!')
+end
 
 % --- Executes on button press in RunAnalysis.
 function RunAnalysis_Callback(hObject, eventdata, handles)
@@ -190,6 +200,8 @@ if isfield(handles,'r')
         fprintf(fhandle,[num2str(handles.r(i)),',',num2str(handles.g(i)),'\n']);
     end
     fclose(fhandle);
+    
+    msgbox('Pair correlation analysis saved!')
 else
     msgbox('You must first run the analysis!')
 end
