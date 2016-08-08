@@ -633,7 +633,7 @@ if isfield(handles,'XposRaw')
     if exist('rectangleCorners','var')
         handles.ROIs{end+1}=rectangleCorners;
         if isfield(handles,'time_cluster_parameters')
-            handles.time_cluster_parameters.sensitivity(end+1)=nan;
+            handles.time_cluster_parameters.tolerance(end+1)=nan;
             handles.time_cluster_parameters.min_size(end+1)=nan;
         end
         guidata(hObject,handles) 
@@ -677,7 +677,7 @@ if isfield(handles,'XposRaw')
                 delete_indices = ROIsInBox(handles.ROIs,rectangleCorners);
                 handles.ROIs(delete_indices)=[];
                 if isfield(handles,'time_cluster_parameters')
-                    handles.time_cluster_parameters.sensitivity(delete_indices)=[];
+                    handles.time_cluster_parameters.tolerance(delete_indices)=[];
                     handles.time_cluster_parameters.min_size(delete_indices)=[];
                 end
                 guidata(hObject,handles)
@@ -777,7 +777,7 @@ if isfield(handles,'XposRaw')
         if isempty(handles.ROIs)
             msgbox('No ROIs Selected!')
         else
-            ManualTemporalClustering(hObject)
+            TemporalClustering(hObject)
         end
     else
         msgbox('No ROIs Selected!')
