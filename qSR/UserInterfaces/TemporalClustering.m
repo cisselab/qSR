@@ -22,7 +22,7 @@ function varargout = TemporalClustering(varargin)
 
 % Edit the above text to modify the response to help TemporalClustering
 
-% Last Modified by GUIDE v2.5 04-Aug-2016 15:26:28
+% Last Modified by GUIDE v2.5 08-Aug-2016 15:16:03
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -393,9 +393,26 @@ else
     GraphUpdateCode(hObject,eventdata,handles)
 end
 
+% --- Executes on button press in ApplyToAll.
+function ApplyToAll_Callback(hObject, eventdata, handles)
+% hObject    handle to ApplyToAll (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
 
+mainHandles=guidata(handles.mainObject);
 
+ClusterSizeCutoff = str2num(get(handles.Cluster_Cutoff_Input,'String'));
+Number_Slider_Value = get(handles.Cluster_Number_Selector,'Value');   
 
+Dark_Tolerance=SliderToTolerance(Number_Slider_Value);
+
+ROI_ids=ClustersFromROIS(mainHandles.fXpos,mainHandles.fYpos,mainHandles.ROIs);
+
+handles.st_clusters=DarkTimeClustering(mainHandles.fFrames,ROI_ids,Dark_Tolerance,ClusterSizeCutoff);
+handles.parameters.tolerance(:)=Dark_Tolerance;
+handles.parameters.min_size(:)=ClusterSizeCutoff;
+
+guidata(hObject,handles)
 
 %%% Auxiliary Functions %%%
 
@@ -431,7 +448,6 @@ else
     Clusters = false(1,length(mainHandles.fFrames));
 end
 
-handles.Clusters = Clusters;
 guidata(hObject, handles);
 
 axes(handles.Spatial_Axes);
@@ -564,6 +580,13 @@ function Tolerance=SliderToTolerance(Slider)
 function Slider=ToleranceToSlider(Tolerance)
     Slider=1-exp(Tolerance*log(0.99));
 
+function ids=ClustersFromROIS(Xpos,Ypos,ROIs)
+    ids = zeros(size(Xpos));
+    for i = 1:length(ROIs)
+        in_ROI = ((Xpos>ROIs{i}(1))&(Xpos<(ROIs{i}(1)+ROIs{i}(3))))&((Ypos>ROIs{i}(2))&(Ypos<(ROIs{i}(2)+ROIs{i}(4))));
+        ids(in_ROI)=i;
+    end
+        
 
 %%% Create Functions %%%
 
@@ -601,3 +624,4 @@ function Cluster_Number_Display_CreateFcn(hObject, eventdata, handles)
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
+

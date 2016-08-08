@@ -180,6 +180,10 @@ function SaveROIs_Callback(hObject, eventdata, handles)
 if isfield(handles,'sp_clusters')
     mainHandles=guidata(handles.mainObject);
     mainHandles.ROIs = clusters2ROIs(mainHandles.fXpos,mainHandles.fYpos,handles.sp_clusters);
+    
+    mainHandles.time_cluster_parameters.min_size=nan(1,length(mainHandles.ROIs));
+    mainHandles.time_cluster_parameters.tolerance=nan(1,length(mainHandles.ROIs));
+    
     set(mainHandles.PlotROIS,'Value',1)
     guidata(handles.mainObject,mainHandles)
     

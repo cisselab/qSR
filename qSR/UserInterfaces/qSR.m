@@ -696,6 +696,12 @@ else
     msgbox('You must first load data!')
 end
 
+
+
+
+
+
+
 % --------- Box 5: Post Processing Tools --------------- %
 
 % --- Executes on button press in SpatialSumStat.
