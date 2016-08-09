@@ -448,23 +448,28 @@ function Subsection_Selector_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-% axes(handles.Spatial_Axes);
-% rectangle = imrect;
-% rectangleCorners = getPosition(rectangle);
-% 
-% ROIindices = and(handles.ROIindices,((handles.Xpos>rectangleCorners(1))&(handles.Xpos<(rectangleCorners(1)+rectangleCorners(3))))&((handles.Ypos>rectangleCorners(2))&(handles.Ypos<(rectangleCorners(2)+rectangleCorners(4)))));
-% 
-% handles.ROIindices = ROIindices;
-% 
-% handles.WinArea=(max(handles.Xpos(ROIindices))-min(handles.Xpos(ROIindices)))*(max(handles.Ypos(ROIindices))-min(handles.Ypos(ROIindices)));
-% 
-% guidata(hObject, handles);
-% 
-% GraphUpdateCode(hObject,eventdata,handles)
-% 
-% uiwait(handles.figure1);
+mainHandles=guidata(handles.mainObject);
 
-msgbox('Add this functionality')
+axes(handles.Spatial_Axes);
+rectangle = imrect;
+rectangleCorners = getPosition(rectangle);
+
+ROIindices = ((mainHandles.fXpos>rectangleCorners(1))&(mainHandles.fXpos<(rectangleCorners(1)+rectangleCorners(3))))&((mainHandles.fYpos>rectangleCorners(2))&(mainHandles.fYpos<(rectangleCorners(2)+rectangleCorners(4))));
+
+handles.in_ROI = ROIindices;
+
+mainHandles.ROIs{handles.current_ROI}=rectangleCorners;
+handles.WinArea=mainHandles.ROIs{handles.current_ROI}(3)*mainHandles.ROIs{handles.current_ROI}(4);
+
+guidata(handles.mainObject,mainHandles)
+guidata(hObject, handles);
+
+mainHandles=PlotPointillist(handles.mainObject,mainHandles);
+guidata(handles.mainObject,mainHandles)
+
+PlotCurrentROI(handles.mainObject,mainHandles,handles.current_ROI)
+
+GraphUpdateCode(hObject,eventdata,handles)
 
 
 
