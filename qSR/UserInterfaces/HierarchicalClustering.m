@@ -179,7 +179,14 @@ function SaveROIs_Callback(hObject, eventdata, handles)
 
 if isfield(handles,'sp_clusters')
     mainHandles=guidata(handles.mainObject);
-    mainHandles.ROIs = clusters2ROIs(mainHandles.fXpos,mainHandles.fYpos,handles.sp_clusters);
+    old_ROIs = clusters2ROIs(mainHandles.fXpos,mainHandles.fYpos,handles.sp_clusters);
+    new_ROIs=mergeROIs(old_ROIs);
+    ratio=length(old_ROIs)/length(new_ROIs);
+    if ratio > 5
+        msgbox('Warning: ')
+    end
+    
+    mainHandles.ROIs=new_ROIs;
     
     mainHandles.time_cluster_parameters.min_size=nan(1,length(mainHandles.ROIs));
     mainHandles.time_cluster_parameters.tolerance=nan(1,length(mainHandles.ROIs));
