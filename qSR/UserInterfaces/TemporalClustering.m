@@ -22,7 +22,7 @@ function varargout = TemporalClustering(varargin)
 
 % Edit the above text to modify the response to help TemporalClustering
 
-% Last Modified by GUIDE v2.5 08-Aug-2016 16:50:24
+% Last Modified by GUIDE v2.5 09-Aug-2016 10:29:14
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -474,15 +474,22 @@ msgbox('Add this functionality')
 
 %%% Visualization Tools %%% 
 
-% --- Executes on button press in DisplayCumDetTrace.
-function DisplayCumDetTrace_Callback(hObject, eventdata, handles)
-% hObject    handle to DisplayCumDetTrace (see GCBO)
+% --- Executes on button press in DisplayBackgroundTrace.
+function DisplayBackgroundTrace_Callback(hObject, eventdata, handles)
+% hObject    handle to DisplayBackgroundTrace (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-% Hint: get(hObject,'Value') returns toggle state of DisplayCumDetTrace
+% Hint: get(hObject,'Value') returns toggle state of DisplayBackgroundTrace
 
-GraphUpdateCode(hObject,eventdata,handles)
+mainHandles=guidata(handles.mainObject);
+
+if isfield(mainHandles,'fitParams')
+    GraphUpdateCode(hObject,eventdata,handles)
+else
+    msgbox('The user must first select the nucleus!')
+    set(handles.DisplayBackgroundTrace,'value',0)
+end
 
 % --- Executes on button press in FitTrace.
 function FitTrace_Callback(hObject, eventdata, handles)
@@ -492,8 +499,14 @@ function FitTrace_Callback(hObject, eventdata, handles)
 
 % Hint: get(hObject,'Value') returns toggle state of FitTrace
 
-GraphUpdateCode(hObject,eventdata,handles)
+mainHandles=guidata(handles.mainObject);
 
+if isfield(mainHandles,'fitParams')
+    GraphUpdateCode(hObject,eventdata,handles)
+else
+    msgbox('The user must first select the nucleus!')
+    set(handles.FitTrace,'value',0)
+end
 
 
 
@@ -629,7 +642,7 @@ function GraphUpdateCode(hObject,eventdata,handles)
 
 mainHandles=guidata(handles.mainObject);
 displayFit = get(handles.FitTrace,'Value');
-displayBackground = get(handles.DisplayCumDetTrace,'Value');
+displayBackground = get(handles.DisplayBackgroundTrace,'Value');
 
 ClusterSizeCutoff = str2num(get(handles.Cluster_Cutoff_Input,'String'));
 Number_Slider_Value = get(handles.Cluster_Number_Selector,'Value'); %Reads the value of Number slider, which was just adjusted.  
@@ -722,25 +735,25 @@ for i = 1:a
     handles.st_clusters = (LargestClusterID+1)*double(Clusters(i,:))+handles.st_clusters; %Each ROI will be indexed by a unique integer
 end
 
-% if displayFit
-%     functionHandle = @(params,x)(params*(1-exp(-x{1}/x{2}))+x{1}*x{3});
-%     handles.A=nlinfit({X,handles.TimeConstant,handles.WinArea/handles.NucArea*handles.FalseDetRate},Z,functionHandle,10);
-%     AreaFraction = handles.WinArea/handles.NucArea;
-%     ExponentialTerm = (1-exp(-X/handles.TimeConstant));
-%     Zfit = handles.A*ExponentialTerm+AreaFraction*(handles.FalseDetRate*X);
-%     %Zfit = A*ExponentialTerm;
-%     hold on
-%     plot(X,Zfit,'g')
-% else
-%     handles.A=0;
-% end
+if displayFit
+    functionHandle = @(params,x)(params*(1-exp(-x{1}/x{2}))+x{1}*x{3});
+    
+    AreaFraction = handles.WinArea/mainHandles.NuclearArea;
+    
+    A=nlinfit({X,mainHandles.fitParams(2),AreaFraction*mainHandles.fitParams(3)},Z,functionHandle,10);
+    
+    ExponentialTerm = (1-exp(-X/mainHandles.fitParams(2)));
+    Zfit = A*ExponentialTerm+AreaFraction*(mainHandles.fitParams(3)*X);
+    hold on
+    plot(X,Zfit,'g')
+end
 
-% if displayBackground
-%     AreaFraction = handles.WinArea/handles.NucArea;
-%     ExponentialTerm = (1-exp(-X/handles.TimeConstant));
-%     AverageCumTrace = AreaFraction*(handles.LimitValue*ExponentialTerm+handles.FalseDetRate*X);
-%     plot(X,AverageCumTrace,'r')
-% end
+if displayBackground
+    AreaFraction = handles.WinArea/mainHandles.NuclearArea;
+    ExponentialTerm = (1-exp(-X/mainHandles.fitParams(2)));
+    AverageCumTrace = AreaFraction*(mainHandles.fitParams(1)*ExponentialTerm+mainHandles.fitParams(3)*X);
+    plot(X,AverageCumTrace,'r')
+end
 
 guidata(hObject,handles)
 
@@ -839,4 +852,3 @@ function Cluster_Number_Display_CreateFcn(hObject, eventdata, handles)
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
-

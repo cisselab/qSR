@@ -612,49 +612,9 @@ else
     msgbox('You must first load data!')
 end
 
-% --- Executes on button press in ManualROI.
-function ManualROI_Callback(hObject, eventdata, handles)
-% hObject    handle to ManualROI (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-if isfield(handles,'XposRaw')
-    set(handles.PlotROIS,'Value',1)
-    guidata(hObject,handles)
-    
-    handles = PlotPointillist(hObject,handles);
-    guidata(hObject,handles)
-    
-    try
-        rectangle = imrect;
-        rectangleCorners = getPosition(rectangle);
-    end
-    
-    if exist('rectangleCorners','var')
-        handles.ROIs{end+1}=rectangleCorners;
-        if isfield(handles,'time_cluster_parameters')
-            handles.time_cluster_parameters.tolerance(end+1)=nan;
-            handles.time_cluster_parameters.min_size(end+1)=nan;
-        end
-        guidata(hObject,handles) 
-        handles = PlotPointillist(hObject,handles);
-        guidata(hObject,handles)
-    end    
-else
-    msgbox('You must first load data!')
-end
-
-% --- Executes on button press in ImmediateROITimeTrace.
-function ImmediateROITimeTrace_Callback(hObject, eventdata, handles)
-% hObject    handle to ImmediateROITimeTrace (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-% Hint: get(hObject,'Value') returns toggle state of ImmediateROITimeTrace
-
-% --- Executes on button press in ClearROIs.
-function ClearROIs_Callback(hObject, eventdata, handles)
-% hObject    handle to ClearROIs (see GCBO)
+% --- Executes on button press in ManualTempCluster.
+function ManualTempCluster_Callback(hObject, eventdata, handles)
+% hObject    handle to ManualTempCluster (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
@@ -663,31 +623,12 @@ if isfield(handles,'XposRaw')
         if isempty(handles.ROIs)
             msgbox('No ROIs Selected!')
         else
-            set(handles.PlotROIS,'Value',1)
-            guidata(hObject,handles)
-            handles = PlotPointillist(hObject,handles);
-            guidata(hObject,handles)
-            
-            try
-                rectangle = imrect;
-                rectangleCorners = getPosition(rectangle);
-            end
-            
-            if exist('rectangleCorners','var')
-                delete_indices = ROIsInBox(handles.ROIs,rectangleCorners);
-                handles.ROIs(delete_indices)=[];
-                if isfield(handles,'time_cluster_parameters')
-                    handles.time_cluster_parameters.tolerance(delete_indices)=[];
-                    handles.time_cluster_parameters.min_size(delete_indices)=[];
-                end
-                guidata(hObject,handles)
-                hold off
-                handles = PlotPointillist(hObject,handles);
-                guidata(hObject,handles)
+            if strcmp(handles.which_filter,'raw')
+                TemporalClustering(hObject)
             else
-                msgbox('Window closed before user selected ROIs for deletion!')
+                msgbox('SHOULD ADD LOGICS HERE')
+                TemporalClustering(hObject)
             end
-            
         end
     else
         msgbox('No ROIs Selected!')
@@ -695,7 +636,6 @@ if isfield(handles,'XposRaw')
 else
     msgbox('You must first load data!')
 end
-
 
 
 
@@ -771,84 +711,6 @@ function SaveSpatSumStat_Callback(hObject, eventdata, handles)
     else
         msgbox('No Valid Spatial Cluster Statistics')
     end
-
-% --- Executes on button press in ManualTempCluster.
-function ManualTempCluster_Callback(hObject, eventdata, handles)
-% hObject    handle to ManualTempCluster (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-if isfield(handles,'XposRaw')
-    if isfield(handles,'ROIs')
-        if isempty(handles.ROIs)
-            msgbox('No ROIs Selected!')
-        else
-            TemporalClustering(hObject)
-        end
-    else
-        msgbox('No ROIs Selected!')
-    end
-else
-    msgbox('You must first load data!')
-end
-
-% --- Executes on button press in AutoTempClust.
-function AutoTempClust_Callback(hObject, eventdata, handles)
-% hObject    handle to AutoTempClust (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-
-dark_time_tolerance=inputdlg('Specify the Dark Time Tolerance (in Frames)');
-if isempty(dark_time_tolerance)
-else
-    dark_time_tolerance=str2num(dark_time_tolerance{1});
-    while isempty(dark_time_tolerance)
-        dark_time_tolerance=inputdlg('Invalid Input: Specify the Dark Time Tolerance (in Frames)');
-        if isempty(dark_time_tolerance)
-            break
-        else
-            dark_time_tolerance=str2num(dark_time_tolerance{1});
-        end
-    end
-end
-
-if isempty(dark_time_tolerance)
-else
-    if isfield(handles,'sp_clusters')
-        if length(handles.sp_clusters)==length(handles.fFrames);
-            handles.st_clusters=NaiveTemporalClustering(handles.fFrames,handles.sp_clusters,dark_time_tolerance);
-            handles.valid_st_clusters=true;
-            guidata(hObject,handles)
-        else
-            if isfield(handles,'ROIs')
-                if isempty(handles.ROIs)
-                    msgbox('You must first select clusters or ROIs!!!')
-                else
-                    sp_clusters=ClustersFromROIs(handles.fXpos,handles.fYpos,handles.ROIs);
-                    handles.st_clusters=NaiveTemporalClustering(handles.fFrames,sp_clusters,dark_time_tolerance);
-                    handles.valid_st_clusters=true;
-                    guidata(hObject,handles)
-                end
-            else
-                msgbox('You must first select clusters or ROIs!!!')
-            end
-        end
-    else
-        if isfield(handles,'ROIs')
-            if isempty(handles.ROIs)
-                msgbox('You must first select clusters or ROIs!!!')
-            else
-                sp_clusters=ClustersFromROIs(handles.fXpos,handles.fYpos,handles.ROIs);
-                handles.st_clusters=NaiveTemporalClustering(handles.fFrames,sp_clusters,dark_time_tolerance);
-                handles.valid_st_clusters=true;
-                guidata(hObject,handles)
-            end
-        else
-            msgbox('You must first select clusters or ROIs!!!')
-        end
-    end
-end
 
 % --- Executes on button press in TempSumStat.
 function TempSumStat_Callback(hObject, eventdata, handles)
