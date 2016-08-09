@@ -773,9 +773,15 @@ function PlotCurrentROI(mainObject,mainHandles,current_ROI)
     hold_status = ishold;
     hold on
     
+    for i =1:length(mainHandles.ROIs)
+        x=[mainHandles.ROIs{i}(1),mainHandles.ROIs{i}(1)+mainHandles.ROIs{i}(3),mainHandles.ROIs{i}(1)+mainHandles.ROIs{i}(3),mainHandles.ROIs{i}(1),mainHandles.ROIs{i}(1)];
+        y=[mainHandles.ROIs{i}(2),mainHandles.ROIs{i}(2),mainHandles.ROIs{i}(2)+mainHandles.ROIs{i}(4),mainHandles.ROIs{i}(2)+mainHandles.ROIs{i}(4),mainHandles.ROIs{i}(2)];
+        plot(x,y,'-','color',[0,0.8,0.8])
+    end
+    
     x=[mainHandles.ROIs{current_ROI}(1),mainHandles.ROIs{current_ROI}(1)+mainHandles.ROIs{current_ROI}(3),mainHandles.ROIs{current_ROI}(1)+mainHandles.ROIs{current_ROI}(3),mainHandles.ROIs{current_ROI}(1),mainHandles.ROIs{current_ROI}(1)];
     y=[mainHandles.ROIs{current_ROI}(2),mainHandles.ROIs{current_ROI}(2),mainHandles.ROIs{current_ROI}(2)+mainHandles.ROIs{current_ROI}(4),mainHandles.ROIs{current_ROI}(2)+mainHandles.ROIs{current_ROI}(4),mainHandles.ROIs{current_ROI}(2)];
-    plot(x,y,'-c')
+    plot(x,y,'-r','linewidth',2)
     
     if hold_status
         hold on
