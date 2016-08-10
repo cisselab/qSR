@@ -409,11 +409,11 @@ function DarkTimeTolerance_Callback(hObject, eventdata, handles)
 dark_tolerance = str2num(get(handles.DarkTimeTolerance,'String'));
 if isempty(dark_tolerance)
     msgbox('Invalid Input!')
-    set(handles.DarkTimeTolerance,'String',20)
+    set(handles.DarkTimeTolerance,'String',1)
     guidata(hObject,handles)
 elseif dark_tolerance <=0
     msgbox('Tolerance should be a positive integer!')
-    set(handles.DarkTimeTolerance,'String',20)
+    set(handles.DarkTimeTolerance,'String',1)
     guidata(hObject,handles)
 else
     switch handles.which_filter
