@@ -52,6 +52,9 @@ function figure1_CloseRequestFcn(hObject, eventdata, handles)
 
 % Hint: delete(hObject) closes the figure
 
+mainHandles=guidata(handles.mainObject);
+mainHandles.temp_clustering_window_open=false;
+guidata(handles.mainObject,mainHandles)
 delete(hObject);
 
 % --- Executes just before TemporalClustering is made visible.
@@ -66,6 +69,8 @@ function TemporalClustering_OpeningFcn(hObject, eventdata, handles, varargin)
 handles.mainObject=varargin{1};
 mainHandles=guidata(handles.mainObject);
 
+mainHandles.temp_clustering_window_open=false;
+guidata(handles.mainObject,mainHandles)
 
 if ~isempty(mainHandles.ROIs)
     
@@ -129,7 +134,11 @@ if ~isempty(mainHandles.ROIs)
     end
     
 else
-    msgbox('You must first select ROIs!')
+    mainHandles=PlotPointillist(handles.mainObject,mainHandles);
+    guidata(handles.mainObject,mainHandles)
+    
+    handles.parameters.min_size=[];
+    handles.parameters.tolerance=[];
 end
 
 
@@ -165,39 +174,54 @@ function LoadPrevious_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 
 mainHandles=guidata(handles.mainObject);
+if isfield(handles,'current_ROI')
+    if handles.current_ROI>0      
+        if isfield(mainHandles,'ROIs')
+            if ~isempty(mainHandles.ROIs)
+                handles.current_ROI = mod(handles.current_ROI-2,length(mainHandles.ROIs))+1;
+                handles.in_ROI = ((mainHandles.fXpos>mainHandles.ROIs{handles.current_ROI}(1))&(mainHandles.fXpos<(mainHandles.ROIs{handles.current_ROI}(1)+mainHandles.ROIs{handles.current_ROI}(3))))&((mainHandles.fYpos>mainHandles.ROIs{handles.current_ROI}(2))&(mainHandles.fYpos<(mainHandles.ROIs{handles.current_ROI}(2)+mainHandles.ROIs{handles.current_ROI}(4))));
 
-handles.current_ROI = mod(handles.current_ROI-2,length(mainHandles.ROIs))+1;
-handles.in_ROI = ((mainHandles.fXpos>mainHandles.ROIs{handles.current_ROI}(1))&(mainHandles.fXpos<(mainHandles.ROIs{handles.current_ROI}(1)+mainHandles.ROIs{handles.current_ROI}(3))))&((mainHandles.fYpos>mainHandles.ROIs{handles.current_ROI}(2))&(mainHandles.fYpos<(mainHandles.ROIs{handles.current_ROI}(2)+mainHandles.ROIs{handles.current_ROI}(4))));
+                DisplayText = [num2str(handles.current_ROI),'/',num2str(length(mainHandles.ROIs))];
+                set(handles.CurrentROIID,'string',DisplayText)
 
-DisplayText = [num2str(handles.current_ROI),'/',num2str(length(mainHandles.ROIs))];
-set(handles.CurrentROIID,'string',DisplayText)
+                if isnan(handles.parameters.tolerance(handles.current_ROI))
+                    Number_Slider_Value = get(handles.Cluster_Number_Selector,'Value');   
 
-if isnan(handles.parameters.tolerance(handles.current_ROI))
-    Number_Slider_Value = get(handles.Cluster_Number_Selector,'Value');   
-    
-    Dark_Tolerance=SliderToTolerance(Number_Slider_Value);
-    handles.parameters.tolerance(handles.current_ROI)=Dark_Tolerance;
-    
-    min_pts = str2num(get(handles.Cluster_Cutoff_Input,'String'));
-    handles.parameters.min_size(handles.current_ROI)=min_pts;
+                    Dark_Tolerance=SliderToTolerance(Number_Slider_Value);
+                    handles.parameters.tolerance(handles.current_ROI)=Dark_Tolerance;
+
+                    min_pts = str2num(get(handles.Cluster_Cutoff_Input,'String'));
+                    handles.parameters.min_size(handles.current_ROI)=min_pts;
+                else
+                    set(handles.Cluster_Number_Display,'string',num2str(handles.parameters.tolerance(handles.current_ROI)))
+
+                    Slider_Value=ToleranceToSlider(handles.parameters.tolerance(handles.current_ROI));
+
+                    set(handles.Cluster_Number_Selector,'Value',Slider_Value)
+                    set(handles.Cluster_Cutoff_Input,'String',num2str(handles.parameters.min_size(handles.current_ROI)))
+                end
+
+                handles.WinArea=mainHandles.ROIs{handles.current_ROI}(3)*mainHandles.ROIs{handles.current_ROI}(4);
+                guidata(hObject,handles)
+
+                mainHandles=PlotPointillist(handles.mainObject,mainHandles);
+                guidata(handles.mainObject,mainHandles)
+
+                PlotCurrentROI(handles.mainObject,mainHandles,handles.current_ROI)
+
+                GraphUpdateCode(hObject,eventdata,handles)
+            else
+                 msgbox('No ROIs selected!')
+            end
+        else
+            msgbox('No ROIs selected!')
+        end
+    else 
+        msgbox('No ROIs selected!')
+    end
 else
-    set(handles.Cluster_Number_Display,'string',num2str(handles.parameters.tolerance(handles.current_ROI)))
-    
-    Slider_Value=ToleranceToSlider(handles.parameters.tolerance(handles.current_ROI));
-    
-    set(handles.Cluster_Number_Selector,'Value',Slider_Value)
-    set(handles.Cluster_Cutoff_Input,'String',num2str(handles.parameters.min_size(handles.current_ROI)))
+    msgbox('No ROIs selected!')
 end
-
-handles.WinArea=mainHandles.ROIs{handles.current_ROI}(3)*mainHandles.ROIs{handles.current_ROI}(4);
-guidata(hObject,handles)
-
-mainHandles=PlotPointillist(handles.mainObject,mainHandles);
-guidata(handles.mainObject,mainHandles)
-    
-PlotCurrentROI(handles.mainObject,mainHandles,handles.current_ROI)
-
-GraphUpdateCode(hObject,eventdata,handles)
 
 % --- Executes on button press in LoadNext.
 function LoadNext_Callback(hObject, eventdata, handles)
@@ -206,38 +230,53 @@ function LoadNext_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
     
 mainHandles=guidata(handles.mainObject);
+if isfield(handles,'current_ROI')
+    if handles.current_ROI>0      
+        if isfield(mainHandles,'ROIs')
+            if ~isempty(mainHandles.ROIs)
+                handles.current_ROI = mod(handles.current_ROI,length(mainHandles.ROIs))+1;
+                handles.in_ROI = ((mainHandles.fXpos>mainHandles.ROIs{handles.current_ROI}(1))&(mainHandles.fXpos<(mainHandles.ROIs{handles.current_ROI}(1)+mainHandles.ROIs{handles.current_ROI}(3))))&((mainHandles.fYpos>mainHandles.ROIs{handles.current_ROI}(2))&(mainHandles.fYpos<(mainHandles.ROIs{handles.current_ROI}(2)+mainHandles.ROIs{handles.current_ROI}(4))));
 
-handles.current_ROI = mod(handles.current_ROI,length(mainHandles.ROIs))+1;
-handles.in_ROI = ((mainHandles.fXpos>mainHandles.ROIs{handles.current_ROI}(1))&(mainHandles.fXpos<(mainHandles.ROIs{handles.current_ROI}(1)+mainHandles.ROIs{handles.current_ROI}(3))))&((mainHandles.fYpos>mainHandles.ROIs{handles.current_ROI}(2))&(mainHandles.fYpos<(mainHandles.ROIs{handles.current_ROI}(2)+mainHandles.ROIs{handles.current_ROI}(4))));
+                DisplayText = [num2str(handles.current_ROI),'/',num2str(length(mainHandles.ROIs))];
+                set(handles.CurrentROIID,'string',DisplayText)
 
-DisplayText = [num2str(handles.current_ROI),'/',num2str(length(mainHandles.ROIs))];
-set(handles.CurrentROIID,'string',DisplayText)
+                if isnan(handles.parameters.tolerance(handles.current_ROI))
+                    Number_Slider_Value = get(handles.Cluster_Number_Selector,'Value');   
 
-if isnan(handles.parameters.tolerance(handles.current_ROI))
-    Number_Slider_Value = get(handles.Cluster_Number_Selector,'Value');   
-    
-    Dark_Tolerance=SliderToTolerance(Number_Slider_Value);
-    handles.parameters.tolerance(handles.current_ROI)=Dark_Tolerance;
-    
-    min_pts = str2num(get(handles.Cluster_Cutoff_Input,'String'));
-    handles.parameters.min_size(handles.current_ROI)=min_pts;
+                    Dark_Tolerance=SliderToTolerance(Number_Slider_Value);
+                    handles.parameters.tolerance(handles.current_ROI)=Dark_Tolerance;
+
+                    min_pts = str2num(get(handles.Cluster_Cutoff_Input,'String'));
+                    handles.parameters.min_size(handles.current_ROI)=min_pts;
+                else
+                    set(handles.Cluster_Number_Display,'string',num2str(handles.parameters.tolerance(handles.current_ROI)))
+
+                    Slider_Value=ToleranceToSlider(handles.parameters.tolerance(handles.current_ROI));
+                    set(handles.Cluster_Number_Selector,'Value',Slider_Value)
+                    set(handles.Cluster_Cutoff_Input,'String',num2str(handles.parameters.min_size(handles.current_ROI)))
+                end
+
+                handles.WinArea=mainHandles.ROIs{handles.current_ROI}(3)*mainHandles.ROIs{handles.current_ROI}(4);
+                guidata(hObject,handles)
+
+                mainHandles=PlotPointillist(handles.mainObject,mainHandles);
+                guidata(handles.mainObject,mainHandles)
+
+                PlotCurrentROI(handles.mainObject,mainHandles,handles.current_ROI)
+
+                GraphUpdateCode(hObject,eventdata,handles)
+            else
+                msgbox('No ROIs selected!')
+            end
+        else
+            msgbox('No ROIs selected!')
+        end
+    else
+        msgbox('No ROIs selected!')
+    end
 else
-    set(handles.Cluster_Number_Display,'string',num2str(handles.parameters.tolerance(handles.current_ROI)))
-    
-    Slider_Value=ToleranceToSlider(handles.parameters.tolerance(handles.current_ROI));
-    set(handles.Cluster_Number_Selector,'Value',Slider_Value)
-    set(handles.Cluster_Cutoff_Input,'String',num2str(handles.parameters.min_size(handles.current_ROI)))
+    msgbox('No ROIs selected!')
 end
-
-handles.WinArea=mainHandles.ROIs{handles.current_ROI}(3)*mainHandles.ROIs{handles.current_ROI}(4);
-guidata(hObject,handles)
-
-mainHandles=PlotPointillist(handles.mainObject,mainHandles);
-guidata(handles.mainObject,mainHandles)
-    
-PlotCurrentROI(handles.mainObject,mainHandles,handles.current_ROI)
-
-GraphUpdateCode(hObject,eventdata,handles)
 
 % --- Executes on button press in SelectROI.
 function SelectROI_Callback(hObject, eventdata, handles)
@@ -264,7 +303,7 @@ if isfield(mainHandles,'XposRaw')
         if isfield(mainHandles,'time_cluster_parameters')
             mainHandles.time_cluster_parameters.tolerance(end+1)=nan;
             mainHandles.time_cluster_parameters.min_size(end+1)=nan;
-            guidata(handles.mainObject,mainHandles)
+            guidata(handles.mainObject,mainHandles)            
         end
         
         handles.parameters.tolerance(end+1)=nan;
@@ -319,47 +358,95 @@ function DeleteCurrentROI_Callback(hObject, eventdata, handles)
 
 mainHandles=guidata(handles.mainObject);
 
-old_ROI=handles.current_ROI;
-mainHandles.ROIs(old_ROI)=[];
-handles.current_ROI = mod(handles.current_ROI-2,length(mainHandles.ROIs))+1;
-handles.in_ROI = ((mainHandles.fXpos>mainHandles.ROIs{handles.current_ROI}(1))&(mainHandles.fXpos<(mainHandles.ROIs{handles.current_ROI}(1)+mainHandles.ROIs{handles.current_ROI}(3))))&((mainHandles.fYpos>mainHandles.ROIs{handles.current_ROI}(2))&(mainHandles.fYpos<(mainHandles.ROIs{handles.current_ROI}(2)+mainHandles.ROIs{handles.current_ROI}(4))));
+if isfield(handles,'current_ROI')
+    if handles.current_ROI>0      
+        if isfield(mainHandles,'ROIs')
+            if ~isempty(mainHandles.ROIs)
+                if length(mainHandles.ROIs)>1
+                    old_ROI=handles.current_ROI;
+                    mainHandles.ROIs(old_ROI)=[];
+                    handles.current_ROI = mod(handles.current_ROI-2,length(mainHandles.ROIs))+1;
+                    handles.in_ROI = ((mainHandles.fXpos>mainHandles.ROIs{handles.current_ROI}(1))&(mainHandles.fXpos<(mainHandles.ROIs{handles.current_ROI}(1)+mainHandles.ROIs{handles.current_ROI}(3))))&((mainHandles.fYpos>mainHandles.ROIs{handles.current_ROI}(2))&(mainHandles.fYpos<(mainHandles.ROIs{handles.current_ROI}(2)+mainHandles.ROIs{handles.current_ROI}(4))));
 
-handles.parameters.min_size(old_ROI)=[];
-handles.parameters.tolerance(old_ROI)=[];
-mainHandles.time_cluster_parameters.min_size(old_ROI)=[];
-mainHandles.time_cluster_parameters.tolerance(old_ROI)=[];
-guidata(hObject,handles)
-guidata(handles.mainObject,mainHandles)
+                    handles.parameters.min_size(old_ROI)=[];
+                    handles.parameters.tolerance(old_ROI)=[];
+                    if isfield(mainHandles,'time_cluster_parameters')
+                        mainHandles.time_cluster_parameters.min_size(old_ROI)=[];
+                        mainHandles.time_cluster_parameters.tolerance(old_ROI)=[];
+                        guidata(handles.mainObject,mainHandles)
+                    end
+                    guidata(hObject,handles)
+                    
 
-DisplayText = [num2str(handles.current_ROI),'/',num2str(length(mainHandles.ROIs))];
-set(handles.CurrentROIID,'string',DisplayText)
+                    DisplayText = [num2str(handles.current_ROI),'/',num2str(length(mainHandles.ROIs))];
+                    set(handles.CurrentROIID,'string',DisplayText)
 
-if isnan(handles.parameters.tolerance(handles.current_ROI))
-    Number_Slider_Value = get(handles.Cluster_Number_Selector,'Value');   
-    
-    Dark_Tolerance=SliderToTolerance(Number_Slider_Value);
-    handles.parameters.tolerance(handles.current_ROI)=Dark_Tolerance;
-    
-    min_pts = str2num(get(handles.Cluster_Cutoff_Input,'String'));
-    handles.parameters.min_size(handles.current_ROI)=min_pts;
+                    if isnan(handles.parameters.tolerance(handles.current_ROI))
+                        Number_Slider_Value = get(handles.Cluster_Number_Selector,'Value');   
+
+                        Dark_Tolerance=SliderToTolerance(Number_Slider_Value);
+                        handles.parameters.tolerance(handles.current_ROI)=Dark_Tolerance;
+
+                        min_pts = str2num(get(handles.Cluster_Cutoff_Input,'String'));
+                        handles.parameters.min_size(handles.current_ROI)=min_pts;
+                    else
+                        set(handles.Cluster_Number_Display,'string',num2str(handles.parameters.tolerance(handles.current_ROI)))
+
+                        Slider_Value=ToleranceToSlider(handles.parameters.tolerance(handles.current_ROI));
+
+                        set(handles.Cluster_Number_Selector,'Value',Slider_Value)
+                        set(handles.Cluster_Cutoff_Input,'String',num2str(handles.parameters.min_size(handles.current_ROI)))
+                    end
+
+                    handles.WinArea=mainHandles.ROIs{handles.current_ROI}(3)*mainHandles.ROIs{handles.current_ROI}(4);
+                    guidata(hObject,handles)
+
+                    mainHandles=PlotPointillist(handles.mainObject,mainHandles);
+                    guidata(handles.mainObject,mainHandles)
+
+                    PlotCurrentROI(handles.mainObject,mainHandles,handles.current_ROI)
+
+                    GraphUpdateCode(hObject,eventdata,handles)
+                else
+                    old_ROI=handles.current_ROI;
+                    mainHandles.ROIs={};
+                    handles.current_ROI = 0;
+                    
+                    handles.parameters.min_size=[];
+                    handles.parameters.tolerance=[];
+                    if isfield(mainHandles,'time_cluster_parameters')
+                        mainHandles.time_cluster_parameters.min_size=[];
+                        mainHandles.time_cluster_parameters.tolerance=[];
+                        guidata(handles.mainObject,mainHandles)
+                    end
+                    guidata(hObject,handles)
+                    
+
+                    set(handles.CurrentROIID,'string','0/0')
+
+                    mainHandles=PlotPointillist(handles.mainObject,mainHandles);
+                    guidata(handles.mainObject,mainHandles)
+
+                    axes(handles.Spatial_Axes)
+                    cla
+                    axes(handles.Detection_Axes)
+                    cla
+                    axes(handles.Cumulative_Axes)
+                    cla
+                    
+                end
+            else
+                msgbox('No ROIs selected!')
+            end
+        else
+            msgbox('No ROIs selected!')
+        end
+    else
+        msgbox('No ROIs selected!')
+    end
 else
-    set(handles.Cluster_Number_Display,'string',num2str(handles.parameters.tolerance(handles.current_ROI)))
-    
-    Slider_Value=ToleranceToSlider(handles.parameters.tolerance(handles.current_ROI));
-    
-    set(handles.Cluster_Number_Selector,'Value',Slider_Value)
-    set(handles.Cluster_Cutoff_Input,'String',num2str(handles.parameters.min_size(handles.current_ROI)))
+    msgbox('No ROIs selected!')
 end
-
-handles.WinArea=mainHandles.ROIs{handles.current_ROI}(3)*mainHandles.ROIs{handles.current_ROI}(4);
-guidata(hObject,handles)
-
-mainHandles=PlotPointillist(handles.mainObject,mainHandles);
-guidata(handles.mainObject,mainHandles)
-    
-PlotCurrentROI(handles.mainObject,mainHandles,handles.current_ROI)
-
-GraphUpdateCode(hObject,eventdata,handles)
 
 % --- Executes on button press in DeleteROIs.
 function DeleteROIs_Callback(hObject, eventdata, handles)
@@ -387,6 +474,7 @@ if isfield(mainHandles,'XposRaw')
             if exist('rectangleCorners','var')
                 delete_indices = ROIsInBox(mainHandles.ROIs,rectangleCorners);
                 mainHandles.ROIs(delete_indices)=[];
+                guidata(handles.mainObject,mainHandles)
                 if isfield(mainHandles,'time_cluster_parameters')
                     mainHandles.time_cluster_parameters.tolerance(delete_indices)=[];
                     mainHandles.time_cluster_parameters.min_size(delete_indices)=[];
@@ -395,40 +483,54 @@ if isfield(mainHandles,'XposRaw')
                 handles.parameters.tolerance(delete_indices)=[];
                 handles.parameters.min_size(delete_indices)=[];
                 guidata(hObject,handles)
-                
-                handles.current_ROI=1;
-                handles.in_ROI = ((mainHandles.fXpos>mainHandles.ROIs{handles.current_ROI}(1))&(mainHandles.fXpos<(mainHandles.ROIs{handles.current_ROI}(1)+mainHandles.ROIs{handles.current_ROI}(3))))&((mainHandles.fYpos>mainHandles.ROIs{handles.current_ROI}(2))&(mainHandles.fYpos<(mainHandles.ROIs{handles.current_ROI}(2)+mainHandles.ROIs{handles.current_ROI}(4))));
+                if ~isempty(mainHandles.ROIs)
+                    handles.current_ROI=1;
+                    handles.in_ROI = ((mainHandles.fXpos>mainHandles.ROIs{handles.current_ROI}(1))&(mainHandles.fXpos<(mainHandles.ROIs{handles.current_ROI}(1)+mainHandles.ROIs{handles.current_ROI}(3))))&((mainHandles.fYpos>mainHandles.ROIs{handles.current_ROI}(2))&(mainHandles.fYpos<(mainHandles.ROIs{handles.current_ROI}(2)+mainHandles.ROIs{handles.current_ROI}(4))));
 
-                DisplayText = [num2str(handles.current_ROI),'/',num2str(length(mainHandles.ROIs))];
-                set(handles.CurrentROIID,'string',DisplayText)
+                    DisplayText = [num2str(handles.current_ROI),'/',num2str(length(mainHandles.ROIs))];
+                    set(handles.CurrentROIID,'string',DisplayText)
 
-                if isnan(handles.parameters.tolerance(handles.current_ROI))
-                    Number_Slider_Value = get(handles.Cluster_Number_Selector,'Value');   
+                    if isnan(handles.parameters.tolerance(handles.current_ROI))
+                        Number_Slider_Value = get(handles.Cluster_Number_Selector,'Value');   
 
-                    Dark_Tolerance=SliderToTolerance(Number_Slider_Value);
-                    handles.parameters.tolerance(handles.current_ROI)=Dark_Tolerance;
+                        Dark_Tolerance=SliderToTolerance(Number_Slider_Value);
+                        handles.parameters.tolerance(handles.current_ROI)=Dark_Tolerance;
 
-                    min_pts = str2num(get(handles.Cluster_Cutoff_Input,'String'));
-                    handles.parameters.min_size(handles.current_ROI)=min_pts;
+                        min_pts = str2num(get(handles.Cluster_Cutoff_Input,'String'));
+                        handles.parameters.min_size(handles.current_ROI)=min_pts;
+                    else
+                        set(handles.Cluster_Number_Display,'string',num2str(handles.parameters.tolerance(handles.current_ROI)))
+
+                        Slider_Value=ToleranceToSlider(handles.parameters.tolerance(handles.current_ROI));
+
+                        set(handles.Cluster_Number_Selector,'Value',Slider_Value)
+                        set(handles.Cluster_Cutoff_Input,'String',num2str(handles.parameters.min_size(handles.current_ROI)))
+                    end
+
+                    handles.WinArea=mainHandles.ROIs{handles.current_ROI}(3)*mainHandles.ROIs{handles.current_ROI}(4);
+                    guidata(hObject,handles)
+
+                    mainHandles=PlotPointillist(handles.mainObject,mainHandles);
+                    guidata(handles.mainObject,mainHandles)
+
+                    PlotCurrentROI(handles.mainObject,mainHandles,handles.current_ROI)
+
+                    GraphUpdateCode(hObject,eventdata,handles)
                 else
-                    set(handles.Cluster_Number_Display,'string',num2str(handles.parameters.tolerance(handles.current_ROI)))
+                    handles.current_ROI = 0;
+                    
+                    set(handles.CurrentROIID,'string','0/0')
 
-                    Slider_Value=ToleranceToSlider(handles.parameters.tolerance(handles.current_ROI));
+                    mainHandles=PlotPointillist(handles.mainObject,mainHandles);
+                    guidata(handles.mainObject,mainHandles)
 
-                    set(handles.Cluster_Number_Selector,'Value',Slider_Value)
-                    set(handles.Cluster_Cutoff_Input,'String',num2str(handles.parameters.min_size(handles.current_ROI)))
-                end
-
-                handles.WinArea=mainHandles.ROIs{handles.current_ROI}(3)*mainHandles.ROIs{handles.current_ROI}(4);
-                guidata(hObject,handles)
-
-                mainHandles=PlotPointillist(handles.mainObject,mainHandles);
-                guidata(handles.mainObject,mainHandles)
-
-                PlotCurrentROI(handles.mainObject,mainHandles,handles.current_ROI)
-
-                GraphUpdateCode(hObject,eventdata,handles)
-                
+                    axes(handles.Spatial_Axes)
+                    cla
+                    axes(handles.Detection_Axes)
+                    cla
+                    axes(handles.Cumulative_Axes)
+                    cla
+                end    
             else
                 msgbox('Window closed before user selected ROIs for deletion!')
             end
@@ -440,7 +542,6 @@ if isfield(mainHandles,'XposRaw')
 else
     msgbox('You must first load data!')
 end
-
 
 % --- Executes on button press in Subsection_Selector.
 function Subsection_Selector_Callback(hObject, eventdata, handles)
