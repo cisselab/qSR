@@ -626,8 +626,25 @@ if isfield(handles,'XposRaw')
             if strcmp(handles.which_filter,'raw')
                 TemporalClustering(hObject)
             else
-                msgbox('SHOULD ADD LOGICS HERE')
-                TemporalClustering(hObject)
+                prompt='Temporal Analysis of ROIs is typically performed on Raw, Unfiltered Data. Change the filter status to raw? [Y/N]';
+                str = inputdlg(prompt,'s');
+                if isempty(str)
+                    msgbox('Invalid input')
+                else
+                    switch lower(str{1})
+                        case {'y','yes'}
+                            set(handles.RawData,'value',1)
+                            handles.which_filter = 'raw';
+                            guidata(hObject,handles)
+                            handles=SetfPosVectors(hObject,eventdata,handles);
+                            guidata(hObject,handles)
+                            TemporalClustering(hObject)
+                        case {'n','no'}
+                            TemporalClustering(hObject)
+                        otherwise
+                            msgbox('Invalid input')
+                    end
+                end
             end
         end
     else
