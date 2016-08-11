@@ -902,23 +902,24 @@ function handles = SetfPosVectors(hObject,eventdata,handles)
                     handles.fFrames = handles.Frames(InNucleus);
                     handles.fIntensity = handles.Intensity(InNucleus);
                     guidata(hObject, handles);
+                    handles=FilteredClustersFromRaw(hObject,handles);
+                    guidata(hObject,handles)
+                    
                 case 'iso'
 
                     threshold = str2num(get(handles.IsoLengthScale,'String'));
                     handles.isolated = IsolatedDetectionFilter(handles.Frames,handles.Xposnm,handles.Yposnm,threshold);
-                    relevent_pts=and(InNucleus,~handles.isolated);
-                    handles.fXpos = handles.Xposnm(relevent_pts);
-                    handles.fYpos = handles.Yposnm(relevent_pts);
-                    handles.fFrames = handles.Frames(relevent_pts);
-                    handles.fIntensity=handles.Intensity(relevent_pts);
+                    relevant_pts=and(InNucleus,~handles.isolated);
+                    handles.fXpos = handles.Xposnm(relevant_pts);
+                    handles.fYpos = handles.Yposnm(relevant_pts);
+                    handles.fFrames = handles.Frames(relevant_pts);
+                    handles.fIntensity=handles.Intensity(relevant_pts);
                     guidata(hObject,handles)
-    %             case 'continuous'
-    %                 
-    %                 display('Continuous Merge not installed')
-    %                 handles.fXpos = handles.Xposnm;
-    %                 handles.fYpos = handles.Yposnm;
-    %                 handles.fFrames = handles.Frames;
-    %                 guidata(hObject, handles);
+                    
+                    handles=FilteredClustersFromRaw(hObject,handles);
+                    guidata(hObject,handles)
+                    
+                    
                 case 'quick'
                     sigma = str2num(get(handles.QuickMergeLengthScale,'String'));
                     dark_time = str2num(get(handles.DarkTimeTolerance,'String')); 
@@ -930,6 +931,10 @@ function handles = SetfPosVectors(hObject,eventdata,handles)
                     handles.fFrames = frameCentroid;
                     handles.fIntensity=totalIntensity;
                     guidata(hObject,handles);
+                    
+                    handles=FilteredClustersFromRaw(hObject,handles);
+                    guidata(hObject,handles)
+                    
             end
         else
             handles.which_filter='raw';
@@ -939,6 +944,10 @@ function handles = SetfPosVectors(hObject,eventdata,handles)
             handles.fFrames = handles.Frames(InNucleus);
             handles.fIntensity = handles.Intensity(InNucleus);
             guidata(hObject, handles);
+            
+            handles=FilteredClustersFromRaw(handles,handles);
+            guidata(hObject,handles)
+
         end
         
         handles = PlotPointillist(hObject,handles);
