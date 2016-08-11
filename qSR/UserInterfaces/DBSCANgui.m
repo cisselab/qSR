@@ -85,6 +85,9 @@ function SaveClusters_Callback(hObject, eventdata, handles)
 if isfield(handles,'cluster_IDs')
     mainHandles=guidata(handles.mainObject);
     mainHandles.sp_clusters=handles.cluster_IDs;
+    handles.sp_clusters=handles.cluster_IDs;
+    handles=RawClustersFromFiltered(mainHandles,handles);
+    mainHandles.raw_sp_clusters=handles.raw_sp_clusters;
     mainHandles.valid_sp_clusters=true;
 
     mainHandles.sp_clust_algorithm = 'DBSCAN';

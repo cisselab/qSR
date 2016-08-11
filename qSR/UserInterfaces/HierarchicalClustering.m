@@ -147,6 +147,10 @@ function SaveClusters_Callback(hObject, eventdata, handles)
 if isfield(handles,'sp_clusters')
     mainHandles=guidata(handles.mainObject);
     mainHandles.sp_clusters=handles.sp_clusters;
+    
+    handles=RawClustersFromFiltered(mainHandles,handles);
+    mainHandles.raw_sp_clusters=handles.raw_sp_clusters;
+    
     mainHandles.valid_sp_clusters=true;
 
     mainHandles.sp_clust_algorithm = 'BioJets';
