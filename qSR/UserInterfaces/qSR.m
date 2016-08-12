@@ -58,6 +58,8 @@ handles.which_filter='raw';
 handles.filetype='SRL';
 handles.valid_sp_clusters=false;
 handles.valid_st_clusters=false;
+handles.have_changed_filter_since_sp=false;
+handles.have_changed_filter_since_st=false;
 
 handles.InitialHandles=handles;
 
@@ -650,152 +652,158 @@ end
 
 
 
-
-% --------- Box 5: Post Processing Tools --------------- %
-
-% --- Executes on button press in SpatialSumStat.
-function SpatialSumStat_Callback(hObject, eventdata, handles)
-% hObject    handle to SpatialSumStat (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-if handles.valid_sp_clusters
-    statistics=EvaluateSpatialSummaryStatistics(handles.fXpos,handles.fYpos,handles.sp_clusters);
-    display('This will break if I change filters after finding the clusters')
-    [area_counts,area_bins]=hist([statistics(:).c_hull_area],20);
-    [size_counts,size_bins]=hist([statistics(:).cluster_size],20);
-    
-    figure
-    plot(area_bins,area_counts/sum(area_counts))
-    xlabel('Cluster Area')
-    ylabel('Frequency')
-    figure
-    plot(size_bins,size_counts/sum(size_counts))
-    xlabel('Number of Localizations per Cluster')
-    ylabel('Frequency')
-    
-    figure
-    semilogy(area_bins,area_counts/sum(area_counts))
-    xlabel('Cluster Area')
-    ylabel('Frequency')
-    figure
-    semilogy(size_bins,size_counts/sum(size_counts))
-    xlabel('Number of Localizations per Cluster')
-    ylabel('Frequency')
-    
-    handles.sp_statistics=statistics;
-    guidata(hObject,handles)
-else
-    msgbox('You must first select clusters!')
-end
-
-% --- Executes on button press in SaveSpatSumStat.
-function SaveSpatSumStat_Callback(hObject, eventdata, handles)
-% hObject    handle to SaveSpatSumStat (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-
-    if handles.valid_sp_clusters;
-        test_name = [handles.directory,'spatialstats.csv'];
-        n=1;
-        while exist(test_name,'file')
-            n=n+1;
-            test_name = [handles.directory,'spatialstats',num2str(n),'.csv'];
-        end
-        ExportClusterStatistics(handles.sp_statistics,test_name)
-        
-        filter_status_filename = [handles.directory,'filter_status_for_spatialstats',num2str(n),'.txt'];
-        SaveFilterStatus(hObject,handles,filter_status_filename)
-        
-        fData_filename = [handles.directory,'filtered_data_for_spatial',num2str(n),'.csv'];
-        csvwrite(fData_filename,[handles.fFrames;handles.fXpos;handles.fYpos;handles.fIntensity])
-        
-        cluster_param_file_path=[handles.directory,'spatial_clustering_parameters',num2str(n),'.txt'];
-        SaveClusteringParameters(hObject,handles,cluster_param_file_path)
-
-        sp_cluster_filename = [handles.directory,'sp_clusters',num2str(n),'.csv'];
-        csvwrite(sp_cluster_filename,handles.sp_clusters);
-
-    else
-        msgbox('No Valid Spatial Cluster Statistics')
-    end
-
-% --- Executes on button press in TempSumStat.
-function TempSumStat_Callback(hObject, eventdata, handles)
-% hObject    handle to TempSumStat (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-if handles.valid_st_clusters
-    statistics=EvaluateTemporalSummaryStatistics(handles.fFrames,handles.fXpos,handles.fYpos,handles.st_clusters);
-    display('This will break if I change filters after finding the clusters')
-    [area_counts,area_bins]=hist([statistics(:).c_hull_area],20);
-    [size_counts,size_bins]=hist([statistics(:).cluster_size],20);
-    [duration_counts,duration_bins]=hist([statistics(:).duration],20);
-    
-    figure
-    plot(duration_bins,duration_counts/sum(duration_counts))
-    xlabel('Cluster Duration')
-    ylabel('Frequency')
-    figure
-    semilogy(duration_bins,duration_counts/sum(duration_counts))
-    xlabel('Cluster Duration')
-    ylabel('Frequency')
-    
-    figure
-    plot(area_bins,area_counts/sum(area_counts))
-    xlabel('Cluster Area')
-    ylabel('Frequency')
-    figure
-    plot(size_bins,size_counts/sum(size_counts))
-    xlabel('Number of Localizations per Cluster')
-    ylabel('Frequency')
-    
-    figure
-    semilogy(area_bins,area_counts/sum(area_counts))
-    xlabel('Cluster Area')
-    ylabel('Frequency')
-    figure
-    semilogy(size_bins,size_counts/sum(size_counts))
-    xlabel('Number of Localizations per Cluster')
-    ylabel('Frequency')
-    
-    handles.st_statistics=statistics;
-    guidata(hObject,handles)
-else
-    msgbox('You must first select clusters!')
-end
-
-% --- Executes on button press in SaveTempSumStat.
-function SaveTempSumStat_Callback(hObject, eventdata, handles)
-% hObject    handle to SaveTempSumStat (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-    msgbox('Save st_clusters')
-
-    if handles.valid_st_clusters;
-        test_name = [handles.directory,'temporalstats.csv'];
-        n=1;
-        while exist(test_name,'file')
-            n=n+1;
-            test_name = [handles.directory,'temporalstats',num2str(n),'.csv'];
-        end
-        ExportClusterStatistics(handles.st_statistics,test_name)
-        
-        filter_status_filename = [handles.directory,'filter_status_for_temporalstats',num2str(n),'.txt'];
-        SaveFilterStatus(hObject,handles,filter_status_filename)
-        
-        fData_filename = [handles.directory,'filtered_data_for_temporal',num2str(n),'.csv'];
-        csvwrite(fData_filename,[handles.fFrames;handles.fXpos;handles.fYpos;handles.fIntensity])
-        
-        st_cluster_filename = [handles.directory,'st_clusters',num2str(n),'.csv'];
-        csvwrite(st_cluster_filename,handles.st_clusters);
-    else
-        msgbox('No Valid Temporal Cluster Statistics')
-    end
-
+% 
+% % --------- Box 5: Post Processing Tools --------------- %
+% 
+% % --- Executes on button press in SpatialSumStat.
+% function SpatialSumStat_Callback(hObject, eventdata, handles)
+% % hObject    handle to SpatialSumStat (see GCBO)
+% % eventdata  reserved - to be defined in a future version of MATLAB
+% % handles    structure with handles and user data (see GUIDATA)
+% 
+% if handles.valid_sp_clusters
+%     statistics=EvaluateSpatialSummaryStatistics(handles.fXpos,handles.fYpos,handles.sp_clusters);
+%     %display('This will break if I change filters after finding the clusters')
+%     [area_counts,area_bins]=hist([statistics(:).c_hull_area],20);
+%     [size_counts,size_bins]=hist([statistics(:).cluster_size],20);
+%     
+%     figure
+%     plot(area_bins,area_counts/sum(area_counts))
+%     xlabel('Cluster Area')
+%     ylabel('Frequency')
+%     figure
+%     plot(size_bins,size_counts/sum(size_counts))
+%     xlabel('Number of Localizations per Cluster')
+%     ylabel('Frequency')
+%     
+%     figure
+%     semilogy(area_bins,area_counts/sum(area_counts))
+%     xlabel('Cluster Area')
+%     ylabel('Frequency')
+%     figure
+%     semilogy(size_bins,size_counts/sum(size_counts))
+%     xlabel('Number of Localizations per Cluster')
+%     ylabel('Frequency')
+%     
+%     handles.sp_statistics=statistics;
+%     guidata(hObject,handles)
+% else
+%     msgbox('You must first select clusters!')
+% end
+% 
+% % --- Executes on button press in SaveSpatSumStat.
+% function SaveSpatSumStat_Callback(hObject, eventdata, handles)
+% % hObject    handle to SaveSpatSumStat (see GCBO)
+% % eventdata  reserved - to be defined in a future version of MATLAB
+% % handles    structure with handles and user data (see GUIDATA)
+% 
+% 
+%     if handles.valid_sp_clusters;
+%         test_name = [handles.directory,'spatialstats.csv'];
+%         n=1;
+%         while exist(test_name,'file')
+%             n=n+1;
+%             test_name = [handles.directory,'spatialstats',num2str(n),'.csv'];
+%         end
+%         ExportClusterStatistics(handles.sp_statistics,test_name)
+%         
+%         filter_status_filename = [handles.directory,'filter_status_for_spatialstats',num2str(n),'.txt'];
+%         SaveFilterStatus(hObject,handles,filter_status_filename)
+%         
+%         fData_filename = [handles.directory,'filtered_data_for_spatial',num2str(n),'.csv'];
+%         csvwrite(fData_filename,[handles.fFrames;handles.fXpos;handles.fYpos;handles.fIntensity])
+%         
+%         cluster_param_file_path=[handles.directory,'spatial_clustering_parameters',num2str(n),'.txt'];
+%         SaveClusteringParameters(hObject,handles,cluster_param_file_path)
+% 
+%         sp_cluster_filename = [handles.directory,'sp_clusters',num2str(n),'.csv'];
+%         csvwrite(sp_cluster_filename,handles.sp_clusters);
+% 
+%     else
+%         msgbox('No Valid Spatial Cluster Statistics')
+%     end
+% 
+% % --- Executes on button press in TempSumStat.
+% function TempSumStat_Callback(hObject, eventdata, handles)
+% % hObject    handle to TempSumStat (see GCBO)
+% % eventdata  reserved - to be defined in a future version of MATLAB
+% % handles    structure with handles and user data (see GUIDATA)
+% 
+% if handles.valid_st_clusters
+%     statistics=EvaluateTemporalSummaryStatistics(handles.fFrames,handles.fXpos,handles.fYpos,handles.st_clusters);
+%     display('This will break if I change filters after finding the clusters')
+%     [area_counts,area_bins]=hist([statistics(:).c_hull_area],20);
+%     [size_counts,size_bins]=hist([statistics(:).cluster_size],20);
+%     [duration_counts,duration_bins]=hist([statistics(:).duration],20);
+%     
+%     figure
+%     plot(duration_bins,duration_counts/sum(duration_counts))
+%     xlabel('Cluster Duration')
+%     ylabel('Frequency')
+%     figure
+%     semilogy(duration_bins,duration_counts/sum(duration_counts))
+%     xlabel('Cluster Duration')
+%     ylabel('Frequency')
+%     
+%     figure
+%     plot(area_bins,area_counts/sum(area_counts))
+%     xlabel('Cluster Area')
+%     ylabel('Frequency')
+%     figure
+%     plot(size_bins,size_counts/sum(size_counts))
+%     xlabel('Number of Localizations per Cluster')
+%     ylabel('Frequency')
+%     
+%     figure
+%     semilogy(area_bins,area_counts/sum(area_counts))
+%     xlabel('Cluster Area')
+%     ylabel('Frequency')
+%     figure
+%     semilogy(size_bins,size_counts/sum(size_counts))
+%     xlabel('Number of Localizations per Cluster')
+%     ylabel('Frequency')
+%     
+%     handles.st_statistics=statistics;
+%     guidata(hObject,handles)
+% else
+%     msgbox('You must first select clusters!')
+% end
+% 
+% % --- Executes on button press in SaveTempSumStat.
+% function SaveTempSumStat_Callback(hObject, eventdata, handles)
+% % hObject    handle to SaveTempSumStat (see GCBO)
+% % eventdata  reserved - to be defined in a future version of MATLAB
+% % handles    structure with handles and user data (see GUIDATA)
+% 
+%     msgbox('Save st_clusters')
+% 
+%     if handles.valid_st_clusters;
+%         test_name = [handles.directory,'temporalstats.csv'];
+%         n=1;
+%         while exist(test_name,'file')
+%             n=n+1;
+%             test_name = [handles.directory,'temporalstats',num2str(n),'.csv'];
+%         end
+%         ExportClusterStatistics(handles.st_statistics,test_name)
+%         
+%         filter_status_filename = [handles.directory,'filter_status_for_temporalstats',num2str(n),'.txt'];
+%         SaveFilterStatus(hObject,handles,filter_status_filename)
+%         
+%         fData_filename = [handles.directory,'filtered_data_for_temporal',num2str(n),'.csv'];
+%         csvwrite(fData_filename,[handles.fFrames;handles.fXpos;handles.fYpos;handles.fIntensity])
+%         
+%         ROI_list_file_path=[handles.directory,'Regions_Of_Interest',num2str(n),'.csv'];
+%         SaveRegionsOfInterest(hObject,handles,ROI_list_file_path)
+%         
+%         cluster_param_file_path=[handles.directory,'temporal_clustering_parameters',num2str(n),'.csv'];
+%         SaveTimeClusteringParameters(hObject,handles,cluster_param_file_path)
+%         
+%         st_cluster_filename = [handles.directory,'st_clusters',num2str(n),'.csv'];
+%         csvwrite(st_cluster_filename,handles.st_clusters);
+%     else
+%         msgbox('No Valid Temporal Cluster Statistics')
+%     end
+% 
 
 
 
@@ -902,7 +910,7 @@ function handles = SetfPosVectors(hObject,eventdata,handles)
                     handles.fFrames = handles.Frames(InNucleus);
                     handles.fIntensity = handles.Intensity(InNucleus);
                     guidata(hObject, handles);
-                    handles=FilteredClustersFromRaw(hObject,handles);
+                    handles=FilteredClustersFromRaw(handles,handles);
                     guidata(hObject,handles)
                     
                 case 'iso'
@@ -916,7 +924,7 @@ function handles = SetfPosVectors(hObject,eventdata,handles)
                     handles.fIntensity=handles.Intensity(relevant_pts);
                     guidata(hObject,handles)
                     
-                    handles=FilteredClustersFromRaw(hObject,handles);
+                    handles=FilteredClustersFromRaw(handles,handles);
                     guidata(hObject,handles)
                     
                     
@@ -932,7 +940,7 @@ function handles = SetfPosVectors(hObject,eventdata,handles)
                     handles.fIntensity=totalIntensity;
                     guidata(hObject,handles);
                     
-                    handles=FilteredClustersFromRaw(hObject,handles);
+                    handles=FilteredClustersFromRaw(handles,handles);
                     guidata(hObject,handles)
                     
             end

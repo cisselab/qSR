@@ -17,11 +17,13 @@ function clusterHandles=RawClustersFromFiltered(filterHandles,clusterHandles)
     switch filterHandles.which_filter
         case 'raw'     
             if isfield(clusterHandles,'sp_clusters')
+                clusterHandles.have_changed_filter_since_sp=false;
                 clusterHandles.raw_sp_clusters=zeros(size(filterHandles.Frames));
                 clusterHandles.raw_sp_clusters(InNucleus)=clusterHandles.sp_clusters;
             end
             
             if isfield(clusterHandles,'st_clusters')
+                clusterHandles.have_changed_filter_since_st=false;
                 clusterHandles.raw_st_clusters=zeros(size(filterHandles.Frames));
                 clusterHandles.raw_st_clusters(InNucleus)=clusterHandles.st_clusters;
             end
@@ -30,27 +32,34 @@ function clusterHandles=RawClustersFromFiltered(filterHandles,clusterHandles)
             relevant_points=and(InNucleus,~filterHandles.isolated);
             
             if isfield(clusterHandles,'sp_clusters')
+                clusterHandles.have_changed_filter_since_sp=false;
                 clusterHandles.raw_sp_clusters=zeros(size(filterHandles.Frames));
                 clusterHandles.raw_sp_clusters(relevant_points)=clusterHandles.sp_clusters;
             end
             
             if isfield(clusterHandles,'st_clusters')
+                clusterHandles.have_changed_filter_since_st=false;
                 clusterHandles.raw_st_clusters=zeros(size(filterHandles.Frames));
                 clusterHandles.raw_st_clusters(relevant_points)=clusterHandles.st_clusters;
             end
             
         case 'quick'
-            nuclear_point_ids=zeros(size(filterHandles.Frames));
+            nuclear_point_ids=zeros(1,sum(InNucleus));
             unique_ids=unique(filterHandles.st_ids(filterHandles.st_ids>0));
-            for i = 1:length(unique_ids)
-                nuclear_point_ids(filterHandles.st_ids==unique_ids(i))=unique_ids(i);
-            end
             
             if isfield(clusterHandles,'sp_clusters')
+                clusterHandles.have_changed_filter_since_sp=false;
+                for i = 1:length(unique_ids)
+                    nuclear_point_ids(filterHandles.st_ids==unique_ids(i))=clusterHandles.sp_clusters(i);
+                end
                 clusterHandles.raw_sp_clusters=zeros(size(filterHandles.Frames));
                 clusterHandles.raw_sp_clusters(InNucleus)=nuclear_point_ids;
             end
             if isfield(clusterHandles,'st_clusters')
+                clusterHandles.have_changed_filter_since_st=false;
+                for i = 1:length(unique_ids)
+                    nuclear_point_ids(filterHandles.st_ids==unique_ids(i))=clusterHandles.st_clusters(unique_ids(i));
+                end
                 clusterHandles.raw_st_clusters=zeros(size(filterHandles.Frames));
                 clusterHandles.raw_st_clusters(InNucleus)=nuclear_point_ids;
             end         

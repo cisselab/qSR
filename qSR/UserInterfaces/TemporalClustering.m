@@ -69,8 +69,16 @@ function TemporalClustering_OpeningFcn(hObject, eventdata, handles, varargin)
 handles.mainObject=varargin{1};
 mainHandles=guidata(handles.mainObject);
 
-mainHandles.temp_clustering_window_open=false;
+mainHandles.temp_clustering_window_open=true;
+handles.have_changed_filter_since_st=false;
 guidata(handles.mainObject,mainHandles)
+
+if isfield(mainHandles,'st_clusters')
+    handles.st_clusters=mainHandles.st_clusters;
+    handles.raw_st_clusters=mainHandles.raw_st_clusters;
+    
+    
+end
 
 if ~isempty(mainHandles.ROIs)
     
@@ -624,16 +632,81 @@ function Save_Data_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
+% mainHandles=guidata(handles.mainObject);
+% mainHandles.st_clusters=handles.st_clusters;
+% 
+% mainHandles.raw_st_clusters=handles.raw_st_clusters;
+% mainHandles.valid_st_clusters=true;
+% 
+% mainHandles.time_cluster_parameters.tolerance=handles.parameters.tolerance;
+% mainHandles.time_cluster_parameters.min_size=handles.parameters.min_size;
+% 
+% guidata(handles.mainObject, mainHandles);
+
 mainHandles=guidata(handles.mainObject);
-mainHandles.st_clusters=RenumberClusters(handles.st_clusters);
-mainHandles.valid_st_clusters=true;
 
-mainHandles.time_cluster_parameters.tolerance=handles.parameters.tolerance;
-mainHandles.time_cluster_parameters.min_size=handles.parameters.min_size;
+if mainHandles.valid_st_clusters
+    statistics=EvaluateTemporalSummaryStatistics(mainHandles.fFrames,mainHandles.fXpos,mainHandles.fYpos,mainHandles.st_clusters);
+    
+    [area_counts,area_bins]=hist([statistics(:).c_hull_area],20);
+    [size_counts,size_bins]=hist([statistics(:).cluster_size],20);
+    [duration_counts,duration_bins]=hist([statistics(:).duration],20);
+    
+    figure
+    plot(duration_bins,duration_counts/sum(duration_counts))
+    xlabel('Cluster Duration')
+    ylabel('Frequency')
+    figure
+    semilogy(duration_bins,duration_counts/sum(duration_counts))
+    xlabel('Cluster Duration')
+    ylabel('Frequency')
+    
+    figure
+    plot(area_bins,area_counts/sum(area_counts))
+    xlabel('Cluster Area')
+    ylabel('Frequency')
+    figure
+    plot(size_bins,size_counts/sum(size_counts))
+    xlabel('Number of Localizations per Cluster')
+    ylabel('Frequency')
+    
+    figure
+    semilogy(area_bins,area_counts/sum(area_counts))
+    xlabel('Cluster Area')
+    ylabel('Frequency')
+    figure
+    semilogy(size_bins,size_counts/sum(size_counts))
+    xlabel('Number of Localizations per Cluster')
+    ylabel('Frequency')
+    
+    mainHandles.st_statistics=statistics;
+    guidata(handles.mainObject,mainHandles)
+    
+    test_name = [mainHandles.directory,'temporalstats.csv'];
+    n=1;
+    while exist(test_name,'file')
+        n=n+1;
+        test_name = [mainHandles.directory,'temporalstats',num2str(n),'.csv'];
+    end
+    ExportClusterStatistics(mainHandles.st_statistics,test_name)
 
-guidata(handles.mainObject, mainHandles);
+    filter_status_filename = [mainHandles.directory,'filter_status_for_temporalstats',num2str(n),'.txt'];
+    SaveFilterStatus(handles.mainObject,mainHandles,filter_status_filename)
 
+    fData_filename = [mainHandles.directory,'filtered_data_for_temporal',num2str(n),'.csv'];
+    csvwrite(fData_filename,[mainHandles.fFrames;mainHandles.fXpos;mainHandles.fYpos;mainHandles.fIntensity])
 
+    ROI_list_file_path=[mainHandles.directory,'Regions_Of_Interest',num2str(n),'.csv'];
+    SaveRegionsOfInterest(handles.mainObject,mainHandles,ROI_list_file_path)
+
+    cluster_param_file_path=[mainHandles.directory,'temporal_clustering_parameters',num2str(n),'.csv'];
+    SaveTimeClusteringParameters(handles.mainObject,mainHandles,cluster_param_file_path)
+
+    st_cluster_filename = [mainHandles.directory,'st_clusters',num2str(n),'.csv'];
+    csvwrite(st_cluster_filename,mainHandles.st_clusters);
+else
+    msgbox('You must first select clusters!')
+end
 
 
 
@@ -732,7 +805,19 @@ Dark_Tolerance=SliderToTolerance(Number_Slider_Value);
 
 ROI_ids=ClustersFromROIS(mainHandles.fXpos,mainHandles.fYpos,mainHandles.ROIs);
 
-handles.st_clusters=DarkTimeClustering(mainHandles.fFrames,ROI_ids,Dark_Tolerance,ClusterSizeCutoff);
+st_clusters=DarkTimeClustering(mainHandles.fFrames,ROI_ids,Dark_Tolerance,ClusterSizeCutoff);
+handles.st_clusters=RenumberClusters(st_clusters);
+mainHandles.st_clusters=handles.st_clusters;
+mainHandles.valid_st_clusters=true;
+
+mainHandles.time_cluster_parameters.tolerance=handles.parameters.tolerance;
+mainHandles.time_cluster_parameters.min_size=handles.parameters.min_size;
+
+handles=RawClustersFromFiltered(mainHandles,handles);
+mainHandles.raw_st_clusters=handles.raw_st_clusters;
+mainHandles.have_changed_filter_since_st=handles.have_changed_filter_since_st;
+guidata(handles.mainObject,mainHandles)
+
 handles.parameters.tolerance(:)=Dark_Tolerance;
 handles.parameters.min_size(:)=ClusterSizeCutoff;
 
@@ -747,6 +832,9 @@ guidata(hObject,handles)
 function GraphUpdateCode(hObject,eventdata,handles)
 
 mainHandles=guidata(handles.mainObject);
+
+handles.in_ROI = ((mainHandles.fXpos>mainHandles.ROIs{handles.current_ROI}(1))&(mainHandles.fXpos<(mainHandles.ROIs{handles.current_ROI}(1)+mainHandles.ROIs{handles.current_ROI}(3))))&((mainHandles.fYpos>mainHandles.ROIs{handles.current_ROI}(2))&(mainHandles.fYpos<(mainHandles.ROIs{handles.current_ROI}(2)+mainHandles.ROIs{handles.current_ROI}(4))));
+
 displayFit = get(handles.FitTrace,'Value');
 displayBackground = get(handles.DisplayBackgroundTrace,'Value');
 
@@ -757,6 +845,7 @@ Dark_Tolerance=SliderToTolerance(Number_Slider_Value);
 
 %[Start_Times,End_Times] = HierarchicalClusterIdentification(mainHandles.fFrames,handles.in_ROI,Number_Slider_Value,ClusterSizeCutoff);
 st_clusters=DarkTimeClustering(mainHandles.fFrames,handles.in_ROI,Dark_Tolerance,ClusterSizeCutoff);
+st_clusters=RenumberClusters(st_clusters);
 unique_ids=unique(st_clusters);
 
 %%% Graph Update Code %%%
@@ -835,11 +924,31 @@ end
 [a,~] = size(Clusters);
 if ~isfield(handles,'st_clusters')
     handles.st_clusters=zeros(1,length(mainHandles.fFrames));
+    mainHandles.st_clusters=handles.st_clusters;
+else
+    if mainHandles.have_changed_filter_since_st
+        handles=FilteredClustersFromRaw(mainHandles,handles);
+        mainHandles.st_clusters=handles.st_clusters;
+        guidata(hObject,handles)
+        guidata(handles.mainObject,mainHandles)
+    end
 end
+
 for i = 1:a
     LargestClusterID = max(handles.st_clusters);
     handles.st_clusters = (LargestClusterID+1)*double(Clusters(i,:))+handles.st_clusters; %Each ROI will be indexed by a unique integer
 end
+mainHandles.st_clusters=handles.st_clusters;
+handles = RawClustersFromFiltered(mainHandles,handles);
+mainHandles.raw_st_clusters=handles.raw_st_clusters;
+
+mainHandles.valid_st_clusters=true;
+
+mainHandles.time_cluster_parameters.tolerance=handles.parameters.tolerance;
+mainHandles.time_cluster_parameters.min_size=handles.parameters.min_size;
+
+mainHandles.have_changed_filter_since_st=handles.have_changed_filter_since_st;
+guidata(handles.mainObject,mainHandles)
 
 if displayFit
     functionHandle = @(params,x)(params*(1-exp(-x{1}/x{2}))+x{1}*x{3});

@@ -82,26 +82,77 @@ function SaveClusters_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-if isfield(handles,'cluster_IDs')
-    mainHandles=guidata(handles.mainObject);
-    mainHandles.sp_clusters=handles.cluster_IDs;
-    handles.sp_clusters=handles.cluster_IDs;
-    handles=RawClustersFromFiltered(mainHandles,handles);
-    mainHandles.raw_sp_clusters=handles.raw_sp_clusters;
-    mainHandles.valid_sp_clusters=true;
+% if isfield(handles,'cluster_IDs')
+%     mainHandles=guidata(handles.mainObject);
+%     mainHandles.sp_clusters=handles.cluster_IDs;
+%     mainHandles.raw_sp_clusters=handles.raw_sp_clusters;
+%     mainHandles.valid_sp_clusters=true;
+% 
+%     mainHandles.sp_clust_algorithm = 'DBSCAN';
+% 
+%     lengthscale = str2num(get(handles.LengthScale,'String'));
+%     nmin = str2num(get(handles.MinPoints,'String'));
+%     mainHandles.dbscan_length=lengthscale;
+%     mainHandles.dbscan_nmin=nmin;
+% 
+%     guidata(handles.mainObject,mainHandles)
+%     
+%     msgbox('Export complete!')
+% else
+%     msgbox('You must first run the analysis!')
+% end
 
-    mainHandles.sp_clust_algorithm = 'DBSCAN';
+mainHandles=guidata(handles.mainObject);
 
-    lengthscale = str2num(get(handles.LengthScale,'String'));
-    nmin = str2num(get(handles.MinPoints,'String'));
-    mainHandles.dbscan_length=lengthscale;
-    mainHandles.dbscan_nmin=nmin;
-
+if mainHandles.valid_sp_clusters
+    statistics=EvaluateSpatialSummaryStatistics(mainHandles.fXpos,mainHandles.fYpos,mainHandles.sp_clusters);
+    %display('This will break if I change filters after finding the clusters')
+    [area_counts,area_bins]=hist([statistics(:).c_hull_area],20);
+    [size_counts,size_bins]=hist([statistics(:).cluster_size],20);
+    
+    figure
+    plot(area_bins,area_counts/sum(area_counts))
+    xlabel('Cluster Area')
+    ylabel('Frequency')
+    figure
+    plot(size_bins,size_counts/sum(size_counts))
+    xlabel('Number of Localizations per Cluster')
+    ylabel('Frequency')
+    
+    figure
+    semilogy(area_bins,area_counts/sum(area_counts))
+    xlabel('Cluster Area')
+    ylabel('Frequency')
+    figure
+    semilogy(size_bins,size_counts/sum(size_counts))
+    xlabel('Number of Localizations per Cluster')
+    ylabel('Frequency')
+    
+    mainHandles.sp_statistics=statistics;
     guidata(handles.mainObject,mainHandles)
     
-    msgbox('Export complete!')
+    test_name = [mainHandles.directory,'spatialstats.csv'];
+    n=1;
+    while exist(test_name,'file')
+        n=n+1;
+        test_name = [mainHandles.directory,'spatialstats',num2str(n),'.csv'];
+    end
+    ExportClusterStatistics(mainHandles.sp_statistics,test_name)
+
+    filter_status_filename = [mainHandles.directory,'filter_status_for_spatialstats',num2str(n),'.txt'];
+    SaveFilterStatus(handles.mainObject,mainHandles,filter_status_filename)
+
+    fData_filename = [mainHandles.directory,'filtered_data_for_spatial',num2str(n),'.csv'];
+    csvwrite(fData_filename,[mainHandles.fFrames;mainHandles.fXpos;mainHandles.fYpos;mainHandles.fIntensity])
+
+    cluster_param_file_path=[mainHandles.directory,'spatial_clustering_parameters',num2str(n),'.txt'];
+    SaveClusteringParameters(handles.mainObject,mainHandles,cluster_param_file_path)
+
+    sp_cluster_filename = [mainHandles.directory,'sp_clusters',num2str(n),'.csv'];
+    csvwrite(sp_cluster_filename,mainHandles.sp_clusters);
+    
 else
-    msgbox('You must first run the analysis!')
+    msgbox('You must first select clusters!')
 end
 
 % --- Executes on button press in PlotGraph.
@@ -196,6 +247,25 @@ mainHandles=guidata(handles.mainObject);
 data=[mainHandles.fXpos',mainHandles.fYpos']; %mainHandles.fFrames
 [handles.cluster_IDs,~] = DBSCAN(data,lengthscale,nmin);
 guidata(hObject,handles)
+handles.sp_clusters=handles.cluster_IDs;
+handles=RawClustersFromFiltered(mainHandles,handles);
+guidata(hObject,handles)
+
+
+%%%%%%%%%%%%%%%%
+mainHandles.sp_clusters=handles.cluster_IDs;
+mainHandles.raw_sp_clusters=handles.raw_sp_clusters;
+mainHandles.valid_sp_clusters=true;
+
+mainHandles.sp_clust_algorithm = 'DBSCAN';
+
+lengthscale = str2num(get(handles.LengthScale,'String'));
+nmin = str2num(get(handles.MinPoints,'String'));
+mainHandles.dbscan_length=lengthscale;
+mainHandles.dbscan_nmin=nmin;
+
+guidata(handles.mainObject,mainHandles)
+%%%%%%%%%%%%%%%%%%%
 
 if isfield(handles,'cluster_IDs')
     mainHandles=guidata(handles.mainObject);

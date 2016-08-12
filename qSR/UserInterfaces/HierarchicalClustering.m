@@ -133,22 +133,13 @@ if isfield(handles,'tree')
     Data=[mainHandles.fFrames;mainHandles.fXpos;mainHandles.fYpos]';
     sp_clusters=PlotFastJetClusters(Data,handles.tree,cut_height,threshold_scheme,thresh_parameter,color_scheme);
     handles.sp_clusters=sp_clusters;
+    handles=RawClustersFromFiltered(mainHandles,handles);
     guidata(hObject,handles)
-else
-    msgbox('You must first Create the Tree!')
-end
-
-% --- Executes on button press in SaveClusters.
-function SaveClusters_Callback(hObject, eventdata, handles)
-% hObject    handle to SaveClusters (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-if isfield(handles,'sp_clusters')
-    mainHandles=guidata(handles.mainObject);
+    
+    
+    %%%%%%%%
     mainHandles.sp_clusters=handles.sp_clusters;
     
-    handles=RawClustersFromFiltered(mainHandles,handles);
     mainHandles.raw_sp_clusters=handles.raw_sp_clusters;
     
     mainHandles.valid_sp_clusters=true;
@@ -169,10 +160,97 @@ if isfield(handles,'sp_clusters')
     end
 
     guidata(handles.mainObject,mainHandles)
-    
-    msgbox('Clusters saved!')
+    %%%%%%%%%
 else
-    msgbox('You must first Find Clusters!')
+    msgbox('You must first Create the Tree!')
+end
+
+% --- Executes on button press in SaveClusters.
+function SaveClusters_Callback(hObject, eventdata, handles)
+% hObject    handle to SaveClusters (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% if isfield(handles,'sp_clusters')
+%     mainHandles=guidata(handles.mainObject);
+%     mainHandles.sp_clusters=handles.sp_clusters;
+%     
+%     mainHandles.raw_sp_clusters=handles.raw_sp_clusters;
+%     
+%     mainHandles.valid_sp_clusters=true;
+% 
+%     mainHandles.sp_clust_algorithm = 'BioJets';
+% 
+%     mainHandles.BioJets_lengthscale = str2num(get(handles.LengthScale,'String'));
+%     mainHandles.BioJets_thresh_parameter=str2num(get(handles.ThresholdParameter,'String'));
+% 
+%     contents = cellstr(get(handles.ClusterDeterminant,'String'));
+%     cluster_determinant=contents{get(handles.ClusterDeterminant,'Value')};
+% 
+%     switch cluster_determinant
+%         case 'Minimum Size'
+%             mainHandles.BioJets_threshold_scheme = 'min_points';
+%         case 'Fixed Number'
+%             mainHandles.BioJets_threshold_scheme = 'top_clusters';
+%     end
+% 
+%     guidata(handles.mainObject,mainHandles)
+%     
+%     msgbox('Clusters saved!')
+% else
+%     msgbox('You must first Find Clusters!')
+% end
+mainHandles=guidata(handles.mainObject);
+
+if mainHandles.valid_sp_clusters
+    statistics=EvaluateSpatialSummaryStatistics(mainHandles.fXpos,mainHandles.fYpos,mainHandles.sp_clusters);
+    %display('This will break if I change filters after finding the clusters')
+    [area_counts,area_bins]=hist([statistics(:).c_hull_area],20);
+    [size_counts,size_bins]=hist([statistics(:).cluster_size],20);
+    
+    figure
+    plot(area_bins,area_counts/sum(area_counts))
+    xlabel('Cluster Area')
+    ylabel('Frequency')
+    figure
+    plot(size_bins,size_counts/sum(size_counts))
+    xlabel('Number of Localizations per Cluster')
+    ylabel('Frequency')
+    
+    figure
+    semilogy(area_bins,area_counts/sum(area_counts))
+    xlabel('Cluster Area')
+    ylabel('Frequency')
+    figure
+    semilogy(size_bins,size_counts/sum(size_counts))
+    xlabel('Number of Localizations per Cluster')
+    ylabel('Frequency')
+    
+    mainHandles.sp_statistics=statistics;
+    guidata(handles.mainObject,mainHandles)
+    
+    test_name = [mainHandles.directory,'spatialstats.csv'];
+    n=1;
+    while exist(test_name,'file')
+        n=n+1;
+        test_name = [mainHandles.directory,'spatialstats',num2str(n),'.csv'];
+    end
+    ExportClusterStatistics(mainHandles.sp_statistics,test_name)
+
+    filter_status_filename = [mainHandles.directory,'filter_status_for_spatialstats',num2str(n),'.txt'];
+    SaveFilterStatus(handles.mainObject,mainHandles,filter_status_filename)
+
+    fData_filename = [mainHandles.directory,'filtered_data_for_spatial',num2str(n),'.csv'];
+    csvwrite(fData_filename,[mainHandles.fFrames;mainHandles.fXpos;mainHandles.fYpos;mainHandles.fIntensity])
+
+    cluster_param_file_path=[mainHandles.directory,'spatial_clustering_parameters',num2str(n),'.txt'];
+    SaveClusteringParameters(handles.mainObject,mainHandles,cluster_param_file_path)
+
+    sp_cluster_filename = [mainHandles.directory,'sp_clusters',num2str(n),'.csv'];
+    csvwrite(sp_cluster_filename,mainHandles.sp_clusters);
+    
+else
+    msgbox('You must first select clusters!')
 end
 
 % --- Executes on button press in SaveROIs.
