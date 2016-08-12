@@ -210,43 +210,51 @@ if mainHandles.valid_sp_clusters
     
     figure
     plot(area_bins,area_counts/sum(area_counts))
-    xlabel('Cluster Area')
+    xlabel('Cluster Area (nm^2)')
     ylabel('Frequency')
+    title('Cluster Area Distribution')
+    
+    figure
+    semilogy(area_bins,area_counts/sum(area_counts))
+    xlabel('Cluster Area (nm^2)')
+    ylabel('Frequency')
+    title('Cluster Area Distribution')
+    
     figure
     plot(size_bins,size_counts/sum(size_counts))
     xlabel('Number of Localizations per Cluster')
     ylabel('Frequency')
+    title('Cluster Size Distribution')
     
-    figure
-    semilogy(area_bins,area_counts/sum(area_counts))
-    xlabel('Cluster Area')
-    ylabel('Frequency')
     figure
     semilogy(size_bins,size_counts/sum(size_counts))
     xlabel('Number of Localizations per Cluster')
     ylabel('Frequency')
+    title('Cluster Size Distribution')
     
     mainHandles.sp_statistics=statistics;
     guidata(handles.mainObject,mainHandles)
     
-    test_name = [mainHandles.directory,'spatialstats.csv'];
+    test_name = [mainHandles.directory,'Spatial_Cluster_Statistics',filesep];
     n=1;
-    while exist(test_name,'file')
+    while exist(test_name,'dir')
         n=n+1;
-        test_name = [mainHandles.directory,'spatialstats',num2str(n),'.csv'];
+        test_name = [mainHandles.directory,'Spatial_Cluster_Statistics',num2str(n),filesep];
     end
-    ExportClusterStatistics(mainHandles.sp_statistics,test_name)
+    mkdir(test_name);
+    
+    ExportClusterStatistics(mainHandles.sp_statistics,[test_name,'spatialstats.csv'])
 
-    filter_status_filename = [mainHandles.directory,'filter_status_for_spatialstats',num2str(n),'.txt'];
+    filter_status_filename = [test_name,'filter_status_for_spatialstats.txt'];
     SaveFilterStatus(handles.mainObject,mainHandles,filter_status_filename)
 
-    fData_filename = [mainHandles.directory,'filtered_data_for_spatial',num2str(n),'.csv'];
+    fData_filename = [test_name,'filtered_data_for_spatial.csv'];
     csvwrite(fData_filename,[mainHandles.fFrames;mainHandles.fXpos;mainHandles.fYpos;mainHandles.fIntensity])
 
-    cluster_param_file_path=[mainHandles.directory,'spatial_clustering_parameters',num2str(n),'.txt'];
+    cluster_param_file_path=[test_name,'spatial_clustering_parameters.txt'];
     SaveClusteringParameters(handles.mainObject,mainHandles,cluster_param_file_path)
 
-    sp_cluster_filename = [mainHandles.directory,'sp_clusters',num2str(n),'.csv'];
+    sp_cluster_filename = [test_name,'sp_clusters.csv'];
     csvwrite(sp_cluster_filename,mainHandles.sp_clusters);
     
 else

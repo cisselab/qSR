@@ -654,55 +654,66 @@ if mainHandles.valid_st_clusters
     
     figure
     plot(duration_bins,duration_counts/sum(duration_counts))
-    xlabel('Cluster Duration')
+    xlabel('Cluster Duration (Frames)')
     ylabel('Frequency')
+    title('Cluster Lifetime Distribution')
+    
     figure
     semilogy(duration_bins,duration_counts/sum(duration_counts))
-    xlabel('Cluster Duration')
+    xlabel('Cluster Duration (Frames)')
     ylabel('Frequency')
+    title('Cluster Lifetime Distribution')
     
     figure
     plot(area_bins,area_counts/sum(area_counts))
-    xlabel('Cluster Area')
+    xlabel('Cluster Area (nm^2)')
     ylabel('Frequency')
+    title('Cluster Area Distribution')
+    
+    figure
+    semilogy(area_bins,area_counts/sum(area_counts))
+    xlabel('Cluster Area (nm^2)')
+    ylabel('Frequency')
+    title('Cluster Area Distribution')
+    
     figure
     plot(size_bins,size_counts/sum(size_counts))
     xlabel('Number of Localizations per Cluster')
     ylabel('Frequency')
-    
-    figure
-    semilogy(area_bins,area_counts/sum(area_counts))
-    xlabel('Cluster Area')
-    ylabel('Frequency')
+    title('Cluster Size Distribution')
+     
     figure
     semilogy(size_bins,size_counts/sum(size_counts))
     xlabel('Number of Localizations per Cluster')
     ylabel('Frequency')
+    title('Cluster Size Distribution')
     
     mainHandles.st_statistics=statistics;
     guidata(handles.mainObject,mainHandles)
     
-    test_name = [mainHandles.directory,'temporalstats.csv'];
+    test_name = [mainHandles.directory,'Temporal_Cluster_Statistics',filesep];
     n=1;
-    while exist(test_name,'file')
+    while exist(test_name,'dir')
         n=n+1;
-        test_name = [mainHandles.directory,'temporalstats',num2str(n),'.csv'];
+        test_name = [mainHandles.directory,'Temporal_Cluster_Statistics',num2str(n),filesep];
     end
-    ExportClusterStatistics(mainHandles.st_statistics,test_name)
+    mkdir(test_name);
+    
+    ExportClusterStatistics(mainHandles.st_statistics,[test_name,'temporalstats.csv'])
 
-    filter_status_filename = [mainHandles.directory,'filter_status_for_temporalstats',num2str(n),'.txt'];
+    filter_status_filename = [test_name,'filter_status_for_temporalstats.txt'];
     SaveFilterStatus(handles.mainObject,mainHandles,filter_status_filename)
 
-    fData_filename = [mainHandles.directory,'filtered_data_for_temporal',num2str(n),'.csv'];
+    fData_filename = [test_name,'filtered_data_for_temporal.csv'];
     csvwrite(fData_filename,[mainHandles.fFrames;mainHandles.fXpos;mainHandles.fYpos;mainHandles.fIntensity])
 
-    ROI_list_file_path=[mainHandles.directory,'Regions_Of_Interest',num2str(n),'.csv'];
+    ROI_list_file_path=[test_name,'Regions_Of_Interest.csv'];
     SaveRegionsOfInterest(handles.mainObject,mainHandles,ROI_list_file_path)
 
-    cluster_param_file_path=[mainHandles.directory,'temporal_clustering_parameters',num2str(n),'.csv'];
+    cluster_param_file_path=[test_name,'temporal_clustering_parameters.csv'];
     SaveTimeClusteringParameters(handles.mainObject,mainHandles,cluster_param_file_path)
 
-    st_cluster_filename = [mainHandles.directory,'st_clusters',num2str(n),'.csv'];
+    st_cluster_filename = [test_name,'st_clusters.csv'];
     csvwrite(st_cluster_filename,mainHandles.st_clusters);
 else
     msgbox('You must first select clusters!')
