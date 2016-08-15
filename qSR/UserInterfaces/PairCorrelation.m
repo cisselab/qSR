@@ -139,7 +139,7 @@ if isfield(handles,'included_points')
     progress_bar=waitbar(0,'Calculating correlation function');
     
     try
-        [~,handles.r,handles.g,~] = pair_corr(image,mask,pc_bin_size,pc_max_length);
+        [~,r,g,~] = pair_corr(image,mask,pc_bin_size,pc_max_length);
     end
     
     if exist('r','var')
@@ -298,19 +298,16 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
 end
 
 function DisplaySplash()
-%     display('#--------------------------------------------------------------------------
-% #                       Pair Correlation Analysis
-% #
-% #Prabuddha Sengupta, Tijana Jovanovic-Talisman, Dunja Skoko, Malte Renz, Sarah L Veatch & Jennifer Lippincott-Schwartz
-% #Probing protein heterogeneity in the plasma membrane using PALM and pair correlation analysis
-% #                 M. Cacciari, G.P. Salam and G. Soyez                  
-% #     A software package for jet finding and analysis at colliders      
-% #                           http://fastjet.fr                           
-% #	                                                                      
-% # Please cite EPJC72(2012)1896 [arXiv:1111.6097] if you use this package
-% # for scientific work and optionally PLB641(2006)57 [hep-ph/0512210].   
-% #                                                                       
-% # FastJet is provided without warranty under the terms of the GNU GPLv2.
-% # It uses T. Chan's closest pair algorithm, S. Fortune's Voronoi code
-% # and 3rd party plugin jet algorithms. See COPYING file for details.
-% #--------------------------------------------------------------------------')
+    msgbox({'Pair Correlation Analysis',...
+' ',...
+'Prabuddha Sengupta, Tijana Jovanovic-Talisman, Dunja Skoko, Malte Renz, Sarah L Veatch & Jennifer Lippincott-Schwartz',...
+'Probing protein heterogeneity in the plasma membrane using PALM and pair correlation analysis',...
+'Nat. Methods. 8, 969?975 (2011).',...
+' ',...
+'Calculating the Pair Correlation function: get_autocorr.m ',...
+' ',...
+'Sarah L. Veatch, Benjamin B. Machta, Sarah A. Shelby, Ethan N. Chiang, David A. Holowka & Barbara A. Baird',...
+'Correlation Functions Quantify Super-Resolution Images and Estimate Apparent Clustering Due to Over-Counting',...
+'PLOS ONE (2012).',...
+' ',...
+'Please cite the above works if you use make use of the pair correlation feature of qSR.'})
