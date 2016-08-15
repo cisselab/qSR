@@ -612,22 +612,22 @@ else
     set(handles.DisplayBackgroundTrace,'value',0)
 end
 
-% --- Executes on button press in FitTrace.
-function FitTrace_Callback(hObject, eventdata, handles)
-% hObject    handle to FitTrace (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-% Hint: get(hObject,'Value') returns toggle state of FitTrace
-
-mainHandles=guidata(handles.mainObject);
-
-if isfield(mainHandles,'fitParams')
-    GraphUpdateCode(hObject,eventdata,handles)
-else
-    msgbox('The user must first select the nucleus!')
-    set(handles.FitTrace,'value',0)
-end
+% % --- Executes on button press in FitTrace.
+% function FitTrace_Callback(hObject, eventdata, handles)
+% % hObject    handle to FitTrace (see GCBO)
+% % eventdata  reserved - to be defined in a future version of MATLAB
+% % handles    structure with handles and user data (see GUIDATA)
+% 
+% % Hint: get(hObject,'Value') returns toggle state of FitTrace
+% 
+% mainHandles=guidata(handles.mainObject);
+% 
+% if isfield(mainHandles,'fitParams')
+%     GraphUpdateCode(hObject,eventdata,handles)
+% else
+%     msgbox('The user must first select the nucleus!')
+%     set(handles.FitTrace,'value',0)
+% end
 
 
 
@@ -843,7 +843,7 @@ mainHandles=guidata(handles.mainObject);
 
 handles.in_ROI = ((mainHandles.fXpos>mainHandles.ROIs{handles.current_ROI}(1))&(mainHandles.fXpos<(mainHandles.ROIs{handles.current_ROI}(1)+mainHandles.ROIs{handles.current_ROI}(3))))&((mainHandles.fYpos>mainHandles.ROIs{handles.current_ROI}(2))&(mainHandles.fYpos<(mainHandles.ROIs{handles.current_ROI}(2)+mainHandles.ROIs{handles.current_ROI}(4))));
 
-displayFit = get(handles.FitTrace,'Value');
+% displayFit = get(handles.FitTrace,'Value');
 displayBackground = get(handles.DisplayBackgroundTrace,'Value');
 
 ClusterSizeCutoff = str2num(get(handles.Cluster_Cutoff_Input,'String'));
@@ -958,24 +958,25 @@ mainHandles.time_cluster_parameters.min_size=handles.parameters.min_size;
 mainHandles.have_changed_filter_since_st=handles.have_changed_filter_since_st;
 guidata(handles.mainObject,mainHandles)
 
-if displayFit
-    functionHandle = @(params,x)(params*(1-exp(-x{1}/x{2}))+x{1}*x{3});
-    
-    AreaFraction = handles.WinArea/mainHandles.NuclearArea;
-    
-    A=nlinfit({X,mainHandles.fitParams(2),AreaFraction*mainHandles.fitParams(3)},Z,functionHandle,10);
-    
-    ExponentialTerm = (1-exp(-X/mainHandles.fitParams(2)));
-    Zfit = A*ExponentialTerm+AreaFraction*(mainHandles.fitParams(3)*X);
-    hold on
-    plot(X,Zfit,'g')
-end
+% if displayFit
+%     functionHandle = @(params,x)(params*(1-exp(-x{1}/x{2}))+x{1}*x{3});
+%     
+%     AreaFraction = handles.WinArea/mainHandles.NuclearArea;
+%     
+%     A=nlinfit({X,mainHandles.fitParams(2),AreaFraction*mainHandles.fitParams(3)},Z,functionHandle,10);
+%     
+%     ExponentialTerm = (1-exp(-X/mainHandles.fitParams(2)));
+%     Zfit = A*ExponentialTerm+AreaFraction*(mainHandles.fitParams(3)*X);
+%     hold on
+%     plot(X,Zfit,'g')
+% end
 
 if displayBackground
-    AreaFraction = handles.WinArea/mainHandles.NuclearArea;
-    ExponentialTerm = (1-exp(-X/mainHandles.fitParams(2)));
-    AverageCumTrace = AreaFraction*(mainHandles.fitParams(1)*ExponentialTerm+mainHandles.fitParams(3)*X);
-    plot(X,AverageCumTrace,'r')
+     AreaFraction = handles.WinArea/mainHandles.NuclearArea;
+%     ExponentialTerm = (1-exp(-X/mainHandles.fitParams(2)));
+%     AverageCumTrace = AreaFraction*(mainHandles.fitParams(1)*ExponentialTerm+mainHandles.fitParams(3)*X);
+    [X_background,Z_background]=ExpectedBackground(mainHandles.fFrames,AreaFraction);
+    plot(X_background,Z_background,'r')
 end
 
 guidata(hObject,handles)
