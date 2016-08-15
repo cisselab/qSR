@@ -138,17 +138,30 @@ if isfield(handles,'included_points')
 
     progress_bar=waitbar(0,'Calculating correlation function');
     
-    [~,handles.r,handles.g,~] = pair_corr(image,mask,pc_bin_size,pc_max_length);
-    guidata(hObject,handles)
-
-    figure
-    plot(handles.r,handles.g,'.k')
-    xlabel('r (nm)')
-    ylabel('g(r)')
-    title('Spatial Pair Correlation Function')
+    try
+        [~,handles.r,handles.g,~] = pair_corr(image,mask,pc_bin_size,pc_max_length);
+    end
     
-    if ishandle(progress_bar)
-        close(progress_bar)
+    if exist('r','var')
+        handles.r=r;
+        handles.g=g;
+        guidata(hObject,handles)
+
+        figure
+        plot(handles.r,handles.g,'.k')
+        xlabel('r (nm)')
+        ylabel('g(r)')
+        title('Spatial Pair Correlation Function')
+
+        if ishandle(progress_bar)
+            close(progress_bar)
+        end
+    else
+        msgbox('Could not calculate the pair correlation function. Please verify that get_autocorr.m has been downloaded and added to the MATLAB search path.')
+        
+        if ishandle(progress_bar)
+            close(progress_bar)
+        end
     end
     
 else

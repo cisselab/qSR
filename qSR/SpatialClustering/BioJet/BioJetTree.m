@@ -23,10 +23,22 @@ function tree=BioJetTree(Frames,Xpos,Ypos,Intensity,writefilename,fastjetoutfile
     currentDir=cd;
     cd(FastJetPath);
     
+    
+    
     if isunix
-        BioJetsCallFunction = ['./BioJetsTreeUnix ',writefilename,' ',fastjetoutfilename];
-    else
-        BioJetsCallFunction = ['BioJetsTree.exe ',writefilename,' ',fastjetoutfilename];
+        if exist('BioJetsTreeUnix')
+            BioJetsCallFunction = ['./BioJetsTreeUnix ',writefilename,' ',fastjetoutfilename];
+        else
+            msgbox('You must first compile FastJet! See installation instructions.')
+            return
+        end     
+    elseif ispc
+        if exist('BioJetsTree.exe')
+            BioJetsCallFunction = ['BioJetsTree.exe ',writefilename,' ',fastjetoutfilename];
+        else
+            msgbox('You must first compile FastJet! See installation instructions.')
+            return
+        end     
     end
     status = system(BioJetsCallFunction)
     cd(currentDir);
