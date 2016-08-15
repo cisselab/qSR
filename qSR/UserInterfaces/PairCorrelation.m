@@ -177,22 +177,27 @@ function SaveOutput_Callback(hObject, eventdata, handles)
 %Add saving feature.
 if isfield(handles,'r')
     mainHandles=guidata(handles.mainObject);
+    if exist([mainHandles.directory,'qSR_Analysis_Output'],'dir')
+    else
+        mkdir([mainHandles.directory,'qSR_Analysis_Output']);
+    end
+    
     test_dir_name = 'pc_data';
     count = 1;
-    while exist([mainHandles.directory,test_dir_name],'dir')
+    while exist([mainHandles.directory,'qSR_Analysis_Output',filesep,test_dir_name],'dir')
         count=count+1;
         test_dir_name=['pc_data_',num2str(count)];
     end
-    mkdir([mainHandles.directory,test_dir_name])
+    mkdir([mainHandles.directory,'qSR_Analysis_Output',filesep,test_dir_name])
     
     %save filter state of data
     
-    filter_status_filename = [mainHandles.directory,test_dir_name,filesep,'filter_status_for_pc.txt'];
+    filter_status_filename = [mainHandles.directory,'qSR_Analysis_Output',filesep,test_dir_name,filesep,'filter_status_for_pc.txt'];
     SaveFilterStatus(handles.mainObject,mainHandles,filter_status_filename)
 
     %save ROI
     ROI_filename='IncludedPoints.csv';
-    dlmwrite([mainHandles.directory,test_dir_name,filesep,ROI_filename],handles.included_points,',')
+    dlmwrite([mainHandles.directory,'qSR_Analysis_Output',filesep,test_dir_name,filesep,ROI_filename],handles.included_points,',')
    
     %save image of ROI
     
@@ -203,7 +208,7 @@ if isfield(handles,'r')
     title('Data Points used for pair correlation function')
     hold on
     plot(mainHandles.fXpos(handles.included_points),mainHandles.fYpos(handles.included_points),'.','Markersize',6,'Color',[213;94;0]/255)
-    plot_file_name=[mainHandles.directory,test_dir_name,filesep,'IncludedPoints.jpg'];
+    plot_file_name=[mainHandles.directory,'qSR_Analysis_Output',filesep,test_dir_name,filesep,'IncludedPoints.jpg'];
     saveas(gcf,plot_file_name,'jpg')
     close(gcf)
     
@@ -211,13 +216,13 @@ if isfield(handles,'r')
     pc_bin_size = str2num(get(handles.BinSize,'String'));
     pc_max_length = str2num(get(handles.MaxLength,'String'));
     parameter_filename='parameters.txt';
-    fhandle=fopen([mainHandles.directory,test_dir_name,filesep,parameter_filename],'w');
+    fhandle=fopen([mainHandles.directory,'qSR_Analysis_Output',filesep,test_dir_name,filesep,parameter_filename],'w');
     fprintf(fhandle,['Bin Size = ',num2str(pc_bin_size),' nm \n','Max Length = ',num2str(pc_max_length),' nm']);
     fclose(fhandle);
     
     %save g(r)
     
-    fhandle=fopen([mainHandles.directory,test_dir_name,filesep,'pair_correlation.csv'],'w');
+    fhandle=fopen([mainHandles.directory,'qSR_Analysis_Output',filesep,test_dir_name,filesep,'pair_correlation.csv'],'w');
     fprintf(fhandle,'r(nm),g');
     fprintf(fhandle,'\n');
     for i = 1:length(handles.r)
@@ -225,7 +230,7 @@ if isfield(handles,'r')
     end
     fclose(fhandle);
     
-    msgbox('Pair correlation analysis saved!')
+    msgbox(['Data saved in ', [mainHandles.directory,'qSR_Analysis_Output',filesep,test_dir_name],' !'])
 else
     msgbox('You must first run the analysis!')
 end
