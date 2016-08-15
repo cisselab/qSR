@@ -267,7 +267,7 @@ if isfield(handles,'sp_clusters')
     new_ROIs=mergeROIs(old_ROIs);
     ratio=length(old_ROIs)/length(new_ROIs);
     if ratio > 5
-        msgbox('Warning: ')
+        msgbox('Warning: ROIs strongly overlap. Consolidation may result in excessively large ROIs.')
     end
     
     mainHandles.ROIs=new_ROIs;
