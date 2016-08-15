@@ -125,7 +125,7 @@ function RunAnalysis_Callback(hObject, eventdata, handles)
 
 if isfield(handles,'included_points')
     DisplaySplash
-
+    
     pc_bin_size = str2num(get(handles.BinSize,'String'));
     pc_max_length = str2num(get(handles.MaxLength,'String'));
 
@@ -136,6 +136,8 @@ if isfield(handles,'included_points')
 
     [image,mask,~,~]=create_pc_image(XposIN,YposIN,pc_bin_size,handles.FreehandROICoordinateList);
 
+    progress_bar=waitbar(0,'Calculating correlation function');
+    
     [~,handles.r,handles.g,~] = pair_corr(image,mask,pc_bin_size,pc_max_length);
     guidata(hObject,handles)
 
@@ -144,6 +146,11 @@ if isfield(handles,'included_points')
     xlabel('r (nm)')
     ylabel('g(r)')
     title('Spatial Pair Correlation Function')
+    
+    if ishandle(progress_bar)
+        close(progress_bar)
+    end
+    
 else
     msgbox('You must first select a region of interest!')
 end
