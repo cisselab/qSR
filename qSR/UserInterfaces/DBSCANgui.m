@@ -117,19 +117,7 @@ if mainHandles.valid_sp_clusters
     title('Cluster Area Distribution')
     
     figure
-    semilogy(area_bins,area_counts/sum(area_counts))
-    xlabel('Cluster Area (nm^2)')
-    ylabel('Frequency')
-    title('Cluster Area Distribution')
-    
-    figure
     plot(size_bins,size_counts/sum(size_counts))
-    xlabel('Number of Localizations per Cluster')
-    ylabel('Frequency')
-    title('Cluster Size Distribution')
-    
-    figure
-    semilogy(size_bins,size_counts/sum(size_counts))
     xlabel('Number of Localizations per Cluster')
     ylabel('Frequency')
     title('Cluster Size Distribution')
@@ -137,11 +125,16 @@ if mainHandles.valid_sp_clusters
     mainHandles.sp_statistics=statistics;
     guidata(handles.mainObject,mainHandles)
     
-    test_name = [mainHandles.directory,'Spatial_Cluster_Statistics',filesep];
+    if exist([mainHandles.directory,'qSR_Analysis_Output'],'dir')
+    else
+        mkdir([mainHandles.directory,'qSR_Analysis_Output'])
+    end
+    
+    test_name = [mainHandles.directory,'qSR_Analysis_Output',filesep,'Spatial_Cluster_Statistics',filesep];
     n=1;
     while exist(test_name,'dir')
         n=n+1;
-        test_name = [mainHandles.directory,'Spatial_Cluster_Statistics',num2str(n),filesep];
+        test_name = [mainHandles.directory,'qSR_Analysis_Output',filesep,'Spatial_Cluster_Statistics',num2str(n),filesep];
     end
     mkdir(test_name);
     
@@ -158,6 +151,8 @@ if mainHandles.valid_sp_clusters
 
     sp_cluster_filename = [test_name,'sp_clusters.csv'];
     csvwrite(sp_cluster_filename,mainHandles.sp_clusters);
+    
+    msgbox(['Data saved in ', test_name,' !'])
     
 else
     msgbox('You must first select clusters!')

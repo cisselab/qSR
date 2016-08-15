@@ -659,19 +659,7 @@ if mainHandles.valid_st_clusters
     title('Cluster Lifetime Distribution')
     
     figure
-    semilogy(duration_bins,duration_counts/sum(duration_counts))
-    xlabel('Cluster Duration (Frames)')
-    ylabel('Frequency')
-    title('Cluster Lifetime Distribution')
-    
-    figure
     plot(area_bins,area_counts/sum(area_counts))
-    xlabel('Cluster Area (nm^2)')
-    ylabel('Frequency')
-    title('Cluster Area Distribution')
-    
-    figure
-    semilogy(area_bins,area_counts/sum(area_counts))
     xlabel('Cluster Area (nm^2)')
     ylabel('Frequency')
     title('Cluster Area Distribution')
@@ -681,21 +669,20 @@ if mainHandles.valid_st_clusters
     xlabel('Number of Localizations per Cluster')
     ylabel('Frequency')
     title('Cluster Size Distribution')
-     
-    figure
-    semilogy(size_bins,size_counts/sum(size_counts))
-    xlabel('Number of Localizations per Cluster')
-    ylabel('Frequency')
-    title('Cluster Size Distribution')
     
     mainHandles.st_statistics=statistics;
     guidata(handles.mainObject,mainHandles)
     
-    test_name = [mainHandles.directory,'Temporal_Cluster_Statistics',filesep];
+    if exist([mainHandles.directory,'qSR_Analysis_Output'],'dir')
+    else
+        mkdir([mainHandles.directory,'qSR_Analysis_Output'])
+    end
+    
+    test_name = [mainHandles.directory,'qSR_Analysis_Output',filesep,'Temporal_Cluster_Statistics',filesep];
     n=1;
     while exist(test_name,'dir')
         n=n+1;
-        test_name = [mainHandles.directory,'Temporal_Cluster_Statistics',num2str(n),filesep];
+        test_name = [mainHandles.directory,'qSR_Analysis_Output',filesep,'Temporal_Cluster_Statistics',num2str(n),filesep];
     end
     mkdir(test_name);
     
@@ -715,6 +702,9 @@ if mainHandles.valid_st_clusters
 
     st_cluster_filename = [test_name,'st_clusters.csv'];
     csvwrite(st_cluster_filename,mainHandles.st_clusters);
+    
+    msgbox(['Data saved in ', test_name,' !'])
+    
 else
     msgbox('You must first select clusters!')
 end

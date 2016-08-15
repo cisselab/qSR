@@ -59,22 +59,27 @@ handles.output = hObject;
 
 mainHandles = guidata(handles.mainObject);
 
-if isdir([mainHandles.directory,'FastJetFiles'])
-    testnameIn= [mainHandles.directory,'FastJetFiles',filesep,'FastJetInput.txt'];
-    testnameOut= [mainHandles.directory,'FastJetFiles',filesep,'FastJetOutput.txt'];
+if isdir([mainHandles.directory,'qSR_Analysis_Output'])
+else
+    mkdir([mainHandles.directory,'qSR_Analysis_Output'])
+end
+
+if isdir([mainHandles.directory,'qSR_Analysis_Output',filesep,'FastJetFiles'])
+    testnameIn= [mainHandles.directory,'qSR_Analysis_Output',filesep,'FastJetFiles',filesep,'FastJetInput.txt'];
+    testnameOut= [mainHandles.directory,'qSR_Analysis_Output',filesep,'FastJetFiles',filesep,'FastJetOutput.txt'];
     count=1;
     while exist(testnameIn,'file') == 2
         count = count+1;
-        testnameIn= [mainHandles.directory,'FastJetFiles',filesep,'FastJetInput_',num2str(count),'.txt'];
-        testnameOut= [mainHandles.directory,'FastJetFiles',filesep,'FastJetOutput_',num2str(count),'.txt'];
+        testnameIn= [mainHandles.directory,'qSR_Analysis_Output',filesep,'FastJetFiles',filesep,'FastJetInput_',num2str(count),'.txt'];
+        testnameOut= [mainHandles.directory,'qSR_Analysis_Output',filesep,'FastJetFiles',filesep,'FastJetOutput_',num2str(count),'.txt'];
     end
 
     writefilename= testnameIn;
     fastjetoutfilename=testnameOut;
 else
-    mkdir([mainHandles.directory,'FastJetFiles'])
-    writefilename= [mainHandles.directory,'FastJetFiles',filesep,'FastJetInput.txt'];
-    fastjetoutfilename=[mainHandles.directory,'FastJetFiles',filesep,'FastJetOutput.txt'];
+    mkdir([mainHandles.directory,'qSR_Analysis_Output',filesep,'FastJetFiles'])
+    writefilename= [mainHandles.directory,'qSR_Analysis_Output',filesep,'FastJetFiles',filesep,'FastJetInput.txt'];
+    fastjetoutfilename=[mainHandles.directory,'qSR_Analysis_Output',filesep,'FastJetFiles',filesep,'FastJetOutput.txt'];
 end
 
 
@@ -207,27 +212,9 @@ if mainHandles.valid_sp_clusters
     %display('This will break if I change filters after finding the clusters')
     [area_counts,area_bins]=hist([statistics(:).c_hull_area],20);
     [size_counts,size_bins]=hist([statistics(:).cluster_size],20);
-    
-    figure
-    plot(area_bins,area_counts/sum(area_counts))
-    xlabel('Cluster Area (nm^2)')
-    ylabel('Frequency')
-    title('Cluster Area Distribution')
-    
-    figure
-    semilogy(area_bins,area_counts/sum(area_counts))
-    xlabel('Cluster Area (nm^2)')
-    ylabel('Frequency')
-    title('Cluster Area Distribution')
-    
+
     figure
     plot(size_bins,size_counts/sum(size_counts))
-    xlabel('Number of Localizations per Cluster')
-    ylabel('Frequency')
-    title('Cluster Size Distribution')
-    
-    figure
-    semilogy(size_bins,size_counts/sum(size_counts))
     xlabel('Number of Localizations per Cluster')
     ylabel('Frequency')
     title('Cluster Size Distribution')
@@ -235,11 +222,16 @@ if mainHandles.valid_sp_clusters
     mainHandles.sp_statistics=statistics;
     guidata(handles.mainObject,mainHandles)
     
-    test_name = [mainHandles.directory,'Spatial_Cluster_Statistics',filesep];
+    if exist([mainHandles.directory,'qSR_Analysis_Output'],'dir')
+    else
+        mkdir([mainHandles.directory,'qSR_Analysis_Output'])
+    end
+    
+    test_name = [mainHandles.directory,'qSR_Analysis_Output',filesep,'Spatial_Cluster_Statistics',filesep];
     n=1;
     while exist(test_name,'dir')
         n=n+1;
-        test_name = [mainHandles.directory,'Spatial_Cluster_Statistics',num2str(n),filesep];
+        test_name = [mainHandles.directory,'qSR_Analysis_Output',filesep,'Spatial_Cluster_Statistics',num2str(n),filesep];
     end
     mkdir(test_name);
     
@@ -256,6 +248,8 @@ if mainHandles.valid_sp_clusters
 
     sp_cluster_filename = [test_name,'sp_clusters.csv'];
     csvwrite(sp_cluster_filename,mainHandles.sp_clusters);
+    
+    msgbox(['Data saved in ', test_name,' !'])
     
 else
     msgbox('You must first select clusters!')
