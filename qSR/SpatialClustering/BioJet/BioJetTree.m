@@ -22,7 +22,12 @@ function tree=BioJetTree(Frames,Xpos,Ypos,Intensity,writefilename,fastjetoutfile
     %the present directory. 
     currentDir=cd;
     cd(FastJetPath);
-    BioJetsCallFunction = ['./BioJetsTree ',writefilename,' ',fastjetoutfilename];
+    
+    if isunix
+        BioJetsCallFunction = ['./BioJetsTreeUnix ',writefilename,' ',fastjetoutfilename];
+    else
+        BioJetsCallFunction = ['BioJetsTree.exe ',writefilename,' ',fastjetoutfilename];
+    end
     status = system(BioJetsCallFunction)
     cd(currentDir);
     
