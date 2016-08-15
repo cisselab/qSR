@@ -26,17 +26,19 @@ function tree=BioJetTree(Frames,Xpos,Ypos,Intensity,writefilename,fastjetoutfile
     
     
     if isunix
-        if exist('BioJetsTreeUnix')
+        if exist([FastJetPath,'BioJetsTreeUnix'],'file')
             BioJetsCallFunction = ['./BioJetsTreeUnix ',writefilename,' ',fastjetoutfilename];
         else
             msgbox('You must first compile FastJet! See installation instructions.')
+            tree=[];
             return
         end     
     elseif ispc
-        if exist('BioJetsTree.exe')
+        if exist([FastJetPath,'BioJetsTree.exe'],'file')
             BioJetsCallFunction = ['BioJetsTree.exe ',writefilename,' ',fastjetoutfilename];
         else
             msgbox('You must first compile FastJet! See installation instructions.')
+            tree=[];
             return
         end     
     end

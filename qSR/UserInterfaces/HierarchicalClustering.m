@@ -82,10 +82,9 @@ else
     fastjetoutfilename=[mainHandles.directory,'qSR_Analysis_Output',filesep,'FastJetFiles',filesep,'FastJetOutput.txt'];
 end
 
+SplashScreen()
 
 handles.tree=BioJetTree(mainHandles.fFrames,mainHandles.fXpos,mainHandles.fYpos,mainHandles.fIntensity,writefilename,fastjetoutfilename);
-
-SplashScreen()
 
 % Update handles structure
 guidata(hObject, handles);
