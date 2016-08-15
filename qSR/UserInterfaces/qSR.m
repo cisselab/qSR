@@ -476,6 +476,8 @@ function time_color_Callback(hObject, eventdata, handles)
 % hObject    handle to time_color (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+handles = PlotPointillist(hObject,handles);
+guidata(hObject,handles)
 
 % Hint: get(hObject,'Value') returns toggle state of time_color
 
@@ -484,6 +486,8 @@ function plot_clusters_Callback(hObject, eventdata, handles)
 % hObject    handle to plot_clusters (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+handles = PlotPointillist(hObject,handles);
+guidata(hObject,handles)
 
 % Hint: get(hObject,'Value') returns toggle state of plot_clusters
 
@@ -494,6 +498,9 @@ function PlotROIS_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 
 % Hint: get(hObject,'Value') returns toggle state of PlotROIS
+
+handles = PlotPointillist(hObject,handles);
+guidata(hObject,handles)
 
 % --- Executes on button press in Render.
 function Render_Callback(hObject, eventdata, handles)
