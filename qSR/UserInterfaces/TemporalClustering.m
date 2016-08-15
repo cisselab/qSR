@@ -560,25 +560,32 @@ function Subsection_Selector_Callback(hObject, eventdata, handles)
 mainHandles=guidata(handles.mainObject);
 
 axes(handles.Spatial_Axes);
+
+try
 rectangle = imrect;
 rectangleCorners = getPosition(rectangle);
+end
 
-ROIindices = ((mainHandles.fXpos>rectangleCorners(1))&(mainHandles.fXpos<(rectangleCorners(1)+rectangleCorners(3))))&((mainHandles.fYpos>rectangleCorners(2))&(mainHandles.fYpos<(rectangleCorners(2)+rectangleCorners(4))));
+if exist('rectangleCorners','var')
 
-handles.in_ROI = ROIindices;
+    ROIindices = ((mainHandles.fXpos>rectangleCorners(1))&(mainHandles.fXpos<(rectangleCorners(1)+rectangleCorners(3))))&((mainHandles.fYpos>rectangleCorners(2))&(mainHandles.fYpos<(rectangleCorners(2)+rectangleCorners(4))));
 
-mainHandles.ROIs{handles.current_ROI}=rectangleCorners;
-handles.WinArea=mainHandles.ROIs{handles.current_ROI}(3)*mainHandles.ROIs{handles.current_ROI}(4);
+    handles.in_ROI = ROIindices;
 
-guidata(handles.mainObject,mainHandles)
-guidata(hObject, handles);
+    mainHandles.ROIs{handles.current_ROI}=rectangleCorners;
+    handles.WinArea=mainHandles.ROIs{handles.current_ROI}(3)*mainHandles.ROIs{handles.current_ROI}(4);
 
-mainHandles=PlotPointillist(handles.mainObject,mainHandles);
-guidata(handles.mainObject,mainHandles)
+    guidata(handles.mainObject,mainHandles)
+    guidata(hObject, handles);
 
-PlotCurrentROI(handles.mainObject,mainHandles,handles.current_ROI)
+    mainHandles=PlotPointillist(handles.mainObject,mainHandles);
+    guidata(handles.mainObject,mainHandles)
 
-GraphUpdateCode(hObject,eventdata,handles)
+    PlotCurrentROI(handles.mainObject,mainHandles,handles.current_ROI)
+
+    GraphUpdateCode(hObject,eventdata,handles)
+
+end
 
 
 
