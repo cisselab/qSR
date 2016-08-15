@@ -16,13 +16,13 @@ function clusterHandles = FilteredClustersFromRaw(filterHandles,clusterHandles)
         case 'raw'
             if isfield(clusterHandles,'raw_sp_clusters')
                 clusterHandles.sp_clusters=clusterHandles.raw_sp_clusters(InNucleus);
-                msgbox('Warning: Spatial and Temporal Clustering Assignments have been altered by a change in the filter status. Final results may be unpredictble.')
+                msgbox('Warning: Spatial and Temporal Clustering Assignments have been altered by a change in the filter status. Consider rerunning clustering analyses.')
                 clusterHandles.have_changed_filter_since_sp=true;
             end
             
             if isfield(clusterHandles,'raw_st_clusters')
                 clusterHandles.st_clusters=clusterHandles.raw_st_clusters(InNucleus);
-                msgbox('Warning: Spatial and Temporal Clustering Assignments have been altered by a change in the filter status. Final results may be unpredictble.')
+                msgbox('Warning: Spatial and Temporal Clustering Assignments have been altered by a change in the filter status. Consider rerunning clustering analyses.')
                 clusterHandles.have_changed_filter_since_st=true;
             end
         case 'iso'
@@ -31,20 +31,20 @@ function clusterHandles = FilteredClustersFromRaw(filterHandles,clusterHandles)
             if isfield(clusterHandles,'raw_sp_clusters')
                 clusterHandles.sp_clusters=clusterHandles.raw_sp_clusters(relevant_points);
                 clusterHandles.have_changed_filter_since_sp=true;
-                msgbox('Warning: Spatial and Temporal Clustering Assignments have been altered by a change in the filter status. Final results may be unpredictble.')
+                msgbox('Warning: Spatial and Temporal Clustering Assignments have been altered by a change in the filter status. Consider rerunning clustering analyses.')
             end
             
             if isfield(clusterHandles,'raw_st_clusters')
                 clusterHandles.st_clusters=clusterHandles.raw_st_clusters(relevant_points);
                 clusterHandles.have_changed_filter_since_st=true;
-                msgbox('Warning: Spatial and Temporal Clustering Assignments have been altered by a change in the filter status. Final results may be unpredictble.')
+                msgbox('Warning: Spatial and Temporal Clustering Assignments have been altered by a change in the filter status. Consider rerunning clustering analyses.')
             end
             
         case 'quick'
             unique_ids=unique(filterHandles.st_ids(filterHandles.st_ids>0));
             if isfield(clusterHandles,'raw_sp_clusters')
                 clusterHandles.have_changed_filter_since_sp=true;
-                msgbox('Warning: Spatial and Temporal Clustering Assignments have been altered by a change in the filter status. Final results may be unpredictble.')
+                msgbox('Warning: Spatial and Temporal Clustering Assignments have been altered by a change in the filter status. Consider rerunning clustering analyses.')
                 clusterHandles.sp_clusters=zeros(size(filterHandles.fFrames));
                 
                 assignment_discrepancies=false;
@@ -60,13 +60,13 @@ function clusterHandles = FilteredClustersFromRaw(filterHandles,clusterHandles)
                     end
                 end
                 if assignment_discrepancies
-                    msgbox('WARNING: Selected spatial clusters do not overlap with the filtered groups. Group cluster identification was determine by majority rule. Behavior may be unpredicatble.')
+                    msgbox('WARNING: Selected spatial clusters do not overlap with the filtered groups. Group cluster identification was determine by majority rule. Consider rerunning clustering analyses.')
                 end
             end
             
             if isfield(clusterHandles,'raw_st_clusters')
                 clusterHandles.have_changed_filter_since_st=true;
-                msgbox('Warning: Spatial and Temporal Clustering Assignments have been altered by a change in the filter status. Final results may be unpredictble.')
+                msgbox('Warning: Spatial and Temporal Clustering Assignments have been altered by a change in the filter status. Consider rerunning clustering analyses.')
                 clusterHandles.st_clusters=zeros(size(filterHandles.fFrames));
                 
                 assignment_discrepancies=false;
@@ -82,7 +82,7 @@ function clusterHandles = FilteredClustersFromRaw(filterHandles,clusterHandles)
                     end
                 end
                 if assignment_discrepancies
-                    msgbox('WARNING: Selected spatial clusters do not overlap with the filtered groups. Group cluster identification was determine by majority rule. Behavior may be unpredicatble.')
+                    msgbox('WARNING: Selected spatial clusters do not overlap with the filtered groups. Group cluster identification was determine by majority rule. Consider rerunning clustering analyses.')
                 end
             end
     end
