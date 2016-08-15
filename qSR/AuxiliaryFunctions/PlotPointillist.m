@@ -71,6 +71,8 @@ function handles = PlotPointillist(hObject,handles)
             end
         end
         
+        axis equal square
+        
         if maintain_axes
             
             zoom reset
