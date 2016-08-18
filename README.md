@@ -27,6 +27,9 @@ To perform FastJet Hierarchical Clustering, the FastJet code must first be compi
 To use the Hierarchical Clustering feature, 
   Compile the FastJetTree.cc code. 
   
-  For Unix systems, this can be done using g++. cd into the qSR/SpatialClustering/BioJet/FJCore/fjcore-3.2.0/ and call
-  g++ -O BioJetsTree.cc fjcore.cc -o BioJetsTree
+  For Unix systems, this can be done using g++. cd into qSR/SpatialClustering/BioJet/FJCore/fjcore-3.2.0/ and call
+  g++ -O BioJetsTree.cc fjcore.cc -o BioJetsTreeUnix
+
+  In Windows, the code should be compiled using MinGW. The gcc and std c++ libraries should be statically linked. cd in qSR/SpatialClustering/BioJet/FJCore/fjcore-3.2.0/ from the minGW command line and call
+  g++ -static -static-libgcc -static-libstdc++ -O BioJetsTree.cc fjcore.cc -o BioJetsTree
 
