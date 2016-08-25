@@ -1,16 +1,18 @@
 function statistics=EvaluateSpatialSummaryStatistics(Xpos,Ypos,sp_clusters)
 
     largest_cluster_id = max(sp_clusters);
-    
+    unique_ids=unique(sp_clusters);
+    unique_ids=unique_ids(unique_ids>0);
     statistics = struct;
     
-    for i = 1:largest_cluster_id
+    %for i = 1:largest_cluster_id
+    for i = 1:length(unique_ids)
        %select points in current cluster 
-       Xpos_current=Xpos(sp_clusters==i);
-       Ypos_current=Ypos(sp_clusters==i);
+       Xpos_current=Xpos(sp_clusters==unique_ids(i));
+       Ypos_current=Ypos(sp_clusters==unique_ids(i));
        % Determine number of points in cluster
-       statistics(i).cluster_id=i;
-       statistics(i).cluster_size=sum(sp_clusters==i);
+       statistics(i).cluster_id=unique_ids(i);
+       statistics(i).cluster_size=sum(sp_clusters==unique_ids(i));
        
        if statistics(i).cluster_size>0
            %find their centroid

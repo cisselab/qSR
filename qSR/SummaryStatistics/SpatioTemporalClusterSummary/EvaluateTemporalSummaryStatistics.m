@@ -1,20 +1,22 @@
 function statistics=EvaluateTemporalSummaryStatistics(Frames,Xpos,Ypos,st_clusters)
 
 
-largest_cluster_id=max(st_clusters);
-
+%largest_cluster_id=max(st_clusters);
+unique_ids=unique(st_clusters);
+unique_ids=unique_ids(unique_ids>0);
 statistics=struct;
 
-for i = 1:largest_cluster_id
+%for i = 1:largest_cluster_id
+for i = 1:length(unique_ids)
    %select points in current cluster 
-   Frames_current=sort(Frames(st_clusters==i));
-   Xpos_current=Xpos(st_clusters==i);
-   Ypos_current=Ypos(st_clusters==i);
+   Frames_current=sort(Frames(st_clusters==unique_ids(i)));
+   Xpos_current=Xpos(st_clusters==unique_ids(i));
+   Ypos_current=Ypos(st_clusters==unique_ids(i));
 
    
    % Determine number of points in cluster
-   statistics(i).cluster_id=i;
-   statistics(i).cluster_size=sum(st_clusters==i);
+   statistics(i).cluster_id=unique_ids(i);
+   statistics(i).cluster_size=sum(st_clusters==unique_ids(i));
    
    if statistics(i).cluster_size>0
        %Calculate Temporal stats
