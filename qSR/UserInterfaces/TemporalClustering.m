@@ -371,6 +371,15 @@ if isfield(handles,'current_ROI')
         if isfield(mainHandles,'ROIs')
             if ~isempty(mainHandles.ROIs)
                 if length(mainHandles.ROIs)>1
+                    
+                    % Clear the st_clusters in the current ROI before
+                    % deleting the ROI.
+                    handles.in_ROI = ((mainHandles.fXpos>mainHandles.ROIs{handles.current_ROI}(1))&(mainHandles.fXpos<(mainHandles.ROIs{handles.current_ROI}(1)+mainHandles.ROIs{handles.current_ROI}(3))))&((mainHandles.fYpos>mainHandles.ROIs{handles.current_ROI}(2))&(mainHandles.fYpos<(mainHandles.ROIs{handles.current_ROI}(2)+mainHandles.ROIs{handles.current_ROI}(4))));
+                    handles.st_clusters(handles.in_ROI)=zeros(1,sum(handles.in_ROI));
+                    mainHandles.st_clusters=handles.st_clusters;
+                    guidata(hObject,handles)
+                    guidata(handles.mainObject,mainHandles)
+                    
                     old_ROI=handles.current_ROI;
                     mainHandles.ROIs(old_ROI)=[];
                     handles.current_ROI = mod(handles.current_ROI-2,length(mainHandles.ROIs))+1;
@@ -416,6 +425,15 @@ if isfield(handles,'current_ROI')
 
                     GraphUpdateCode(hObject,eventdata,handles)
                 else
+                    
+                    % Clear the st_clusters in the current ROI before
+                    % deleting the ROI.
+                    handles.in_ROI = ((mainHandles.fXpos>mainHandles.ROIs{handles.current_ROI}(1))&(mainHandles.fXpos<(mainHandles.ROIs{handles.current_ROI}(1)+mainHandles.ROIs{handles.current_ROI}(3))))&((mainHandles.fYpos>mainHandles.ROIs{handles.current_ROI}(2))&(mainHandles.fYpos<(mainHandles.ROIs{handles.current_ROI}(2)+mainHandles.ROIs{handles.current_ROI}(4))));
+                    handles.st_clusters(handles.in_ROI)=zeros(1,sum(handles.in_ROI));
+                    mainHandles.st_clusters=handles.st_clusters;
+                    guidata(hObject,handles)
+                    guidata(handles.mainObject,mainHandles)
+                    
                     old_ROI=handles.current_ROI;
                     mainHandles.ROIs={};
                     handles.current_ROI = 0;
@@ -481,6 +499,18 @@ if isfield(mainHandles,'XposRaw')
             
             if exist('rectangleCorners','var')
                 delete_indices = ROIsInBox(mainHandles.ROIs,rectangleCorners);
+                
+                % Clear the st_clusters in the current ROI before
+                % deleting the ROI.
+                delete_indices_list=find(delete_indices);
+                for i = 1:length(delete_indices_list)
+                    in_ROI = ((mainHandles.fXpos>mainHandles.ROIs{delete_indices_list(i)}(1))&(mainHandles.fXpos<(mainHandles.ROIs{delete_indices_list(i)}(1)+mainHandles.ROIs{delete_indices_list(i)}(3))))&((mainHandles.fYpos>mainHandles.ROIs{delete_indices_list(i)}(2))&(mainHandles.fYpos<(mainHandles.ROIs{delete_indices_list(i)}(2)+mainHandles.ROIs{delete_indices_list(i)}(4))));
+                    handles.st_clusters(in_ROI)=zeros(1,sum(in_ROI));
+                end
+                mainHandles.st_clusters=handles.st_clusters;
+                guidata(hObject,handles)
+                guidata(handles.mainObject,mainHandles)
+                
                 mainHandles.ROIs(delete_indices)=[];
                 guidata(handles.mainObject,mainHandles)
                 if isfield(mainHandles,'time_cluster_parameters')
@@ -568,6 +598,14 @@ end
 
 if exist('rectangleCorners','var')
 
+    % Clear the st_clusters in the current ROI before
+    % deleting the ROI.
+    handles.in_ROI = ((mainHandles.fXpos>mainHandles.ROIs{handles.current_ROI}(1))&(mainHandles.fXpos<(mainHandles.ROIs{handles.current_ROI}(1)+mainHandles.ROIs{handles.current_ROI}(3))))&((mainHandles.fYpos>mainHandles.ROIs{handles.current_ROI}(2))&(mainHandles.fYpos<(mainHandles.ROIs{handles.current_ROI}(2)+mainHandles.ROIs{handles.current_ROI}(4))));
+    handles.st_clusters(handles.in_ROI)=zeros(1,sum(handles.in_ROI));
+    mainHandles.st_clusters=handles.st_clusters;
+    guidata(hObject,handles)
+    guidata(handles.mainObject,mainHandles)
+    
     ROIindices = ((mainHandles.fXpos>rectangleCorners(1))&(mainHandles.fXpos<(rectangleCorners(1)+rectangleCorners(3))))&((mainHandles.fYpos>rectangleCorners(2))&(mainHandles.fYpos<(rectangleCorners(2)+rectangleCorners(4))));
 
     handles.in_ROI = ROIindices;
@@ -929,6 +967,7 @@ if NumberOfClusters <= 1000
     end
 end 
 
+%%% Update the st_clusters variables in the gui handles
 [a,~] = size(Clusters);
 if ~isfield(handles,'st_clusters')
     handles.st_clusters=zeros(1,length(mainHandles.fFrames));
@@ -942,11 +981,16 @@ else
     end
 end
 
+handles.st_clusters(handles.in_ROI)=zeros(1,sum(handles.in_ROI));
 for i = 1:a
     LargestClusterID = max(handles.st_clusters);
     handles.st_clusters = (LargestClusterID+1)*double(Clusters(i,:))+handles.st_clusters; %Each ROI will be indexed by a unique integer
 end
+
 mainHandles.st_clusters=handles.st_clusters;
+%%% 
+
+
 handles = RawClustersFromFiltered(mainHandles,handles);
 mainHandles.raw_st_clusters=handles.raw_st_clusters;
 

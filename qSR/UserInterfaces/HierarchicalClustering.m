@@ -261,7 +261,13 @@ function SaveROIs_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 
 if isfield(handles,'sp_clusters')
+    
     mainHandles=guidata(handles.mainObject);
+    if isfield(mainHandles,'st_clusters')
+        msgbox('Old temporal clusters deleted with selection of new ROIs!')
+        mainHandles.st_clusters=zeros(size(mainHandles.st_clusters));
+    end
+    
     old_ROIs = clusters2ROIs(mainHandles.fXpos,mainHandles.fYpos,handles.sp_clusters);
     new_ROIs=mergeROIs(old_ROIs);
     ratio=length(old_ROIs)/length(new_ROIs);
