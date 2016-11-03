@@ -535,9 +535,9 @@ function Render_Callback(hObject, eventdata, handles)
         Im2=Im2((extra_pixels(1)+1):(end-extra_pixels(1)),(extra_pixels(2)+1):(end-extra_pixels(2)));
 
         figure
-        imshow(Im2);
-        colormap(hot)
+        imshow(Im2,'colormap',hot)
         imcontrast(gca)
+
     else
         msgbox('You must first load data!')
     end
