@@ -19,6 +19,6 @@ function Im2=GaussianImageRender(Xpos,Ypos,px_size,resolution,render_precision)
     Im2=Im2(:,end:-1:1)';
 
     figure
-    imshow(Im2);
+    imshow(Im2,hot);
     colormap(hot)
     imcontrast(gca)

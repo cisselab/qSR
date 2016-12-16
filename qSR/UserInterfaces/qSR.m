@@ -509,34 +509,35 @@ function Render_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 
     if isfield(handles,'XposRaw')
-        Xmin = min(handles.fXpos);Xmax=max(handles.fXpos);Ymin=min(handles.fYpos);Ymax=max(handles.fYpos);
         NumPixels = str2num(get(handles.NumPixels,'String'));
         sigma_render = str2num(get(handles.RenderingPrecision,'String'));
-
-        dx=(Xmax-Xmin)/(NumPixels-1);
-        dy=(Ymax-Ymin)/(NumPixels-1);
-        Edges{1}=Xmin:dx:Xmax;
-        Edges{2}=Ymin:dy:Ymax;
-
-        Im = hist3([handles.fXpos',handles.fYpos'],'Edges',Edges);
-
-        TempX=-round(3*sigma_render/dx)*dx:dx:round(3*sigma_render/dx)*dx;
-        TempY=-round(3*sigma_render/dy)*dy:dy:round(3*sigma_render/dy)*dy;
-
-        ConVecX = exp(-0.5*(TempX/sigma_render).^2); 
-        ConVecY = exp(-0.5*(TempY/sigma_render).^2);
-        Im2 = conv2(ConVecX,ConVecY,Im);
-        Im2=Im2/max(max(Im2));
-        Im2=Im2(:,end:-1:1)';
-
-
-        extra_pixels=(size(Im2)-size(Im))/2;
-
-        Im2=Im2((extra_pixels(1)+1):(end-extra_pixels(1)),(extra_pixels(2)+1):(end-extra_pixels(2)));
-
-        figure
-        imshow(Im2,'colormap',hot)
-        imcontrast(gca)
+        Render(handles.fXpos,handles.fYpos,NumPixels,sigma_render);
+%         Xmin = min(handles.fXpos);Xmax=max(handles.fXpos);Ymin=min(handles.fYpos);Ymax=max(handles.fYpos);
+% 
+%         dx=(Xmax-Xmin)/(NumPixels-1);
+%         dy=(Ymax-Ymin)/(NumPixels-1);
+%         Edges{1}=Xmin:dx:Xmax;
+%         Edges{2}=Ymin:dy:Ymax;
+% 
+%         Im = hist3([handles.fXpos',handles.fYpos'],'Edges',Edges);
+% 
+%         TempX=-round(3*sigma_render/dx)*dx:dx:round(3*sigma_render/dx)*dx;
+%         TempY=-round(3*sigma_render/dy)*dy:dy:round(3*sigma_render/dy)*dy;
+% 
+%         ConVecX = exp(-0.5*(TempX/sigma_render).^2); 
+%         ConVecY = exp(-0.5*(TempY/sigma_render).^2);
+%         Im2 = conv2(ConVecX,ConVecY,Im);
+%         Im2=Im2/max(max(Im2));
+%         Im2=Im2(:,end:-1:1)';
+% 
+% 
+%         extra_pixels=(size(Im2)-size(Im))/2;
+% 
+%         Im2=Im2((extra_pixels(1)+1):(end-extra_pixels(1)),(extra_pixels(2)+1):(end-extra_pixels(2)));
+% 
+%         figure
+%         imshow(Im2,'colormap',hot)
+%         imcontrast(gca)
 
     else
         msgbox('You must first load data!')
