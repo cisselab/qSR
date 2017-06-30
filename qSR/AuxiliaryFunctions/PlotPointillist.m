@@ -65,7 +65,7 @@ function handles = PlotPointillist(hObject,handles)
                     for i = 1:length(handles.ROIs)
                         x=[handles.ROIs{i}(1),handles.ROIs{i}(1)+handles.ROIs{i}(3),handles.ROIs{i}(1)+handles.ROIs{i}(3),handles.ROIs{i}(1),handles.ROIs{i}(1)];
                         y=[handles.ROIs{i}(2),handles.ROIs{i}(2),handles.ROIs{i}(2)+handles.ROIs{i}(4),handles.ROIs{i}(2)+handles.ROIs{i}(4),handles.ROIs{i}(2)];
-                        plot(x,y,'-r')
+                        plot(x,y,'-r','linewidth',2)
                     end
                 end
             end
