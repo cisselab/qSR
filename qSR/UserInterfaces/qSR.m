@@ -66,6 +66,45 @@ handles.InitialHandles=handles;
 % Update handles structure
 guidata(hObject, handles);
 
+if numel(varargin)>0
+    file_full_path = varargin{1};
+    file_struct = dir(file_full_path);
+    filename = file_struct.name;
+    dirName = [file_struct.folder,filesep];
+    
+    handles=handles.InitialHandles;
+    handles.InitialHandles=handles;
+    set(handles.RestrictToNuclear,'value',0)
+    set(handles.RawData,'value',1)
+    
+    handles.filename = filename;
+    handles.directory = dirName;
+
+    [Frames,XposRaw,YposRaw,Intensity]=ReadDataFile([dirName,filename],handles.filetype,hObject,handles);
+
+    %% Initialize Variables and Update Handles
+    % handles.filter = true(1,length(Frames)); %Initialize for later use.
+    % handles.fitParams = [0,0,0]; %Initialize Variables
+    % handles.NuclearArea = 1;
+    % handles.FreehandROI = [];
+    % handles.InNucleus=true(1,length(Frames));
+    % handles.MinClusterSize=2;
+    % handles.ClusterIDs = zeros(1,length(Frames),'uint16');
+    % handles.HaveLoadedAnnotation = false;
+
+    handles.XposRaw=XposRaw;
+    handles.YposRaw=YposRaw;
+    handles.Frames=Frames;
+    handles.Intensity=Intensity;
+    
+    guidata(hObject, handles);
+
+    handles=AdjustPixelSize(hObject,eventdata,handles);
+    
+    set(handles.FileDisplay,'String',['Data File: ',handles.directory,handles.filename])
+    guidata(hObject,handles)
+end
+
 % --- Outputs from this function are returned to the command line.
 function varargout = qSR_OutputFcn(hObject, eventdata, handles) 
 % varargout  cell array for returning output args (see VARARGOUT);
