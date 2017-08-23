@@ -1,9 +1,37 @@
 function Randomize_qSR(directory)
 
+% Randomizes the order of data presented to qSR and displayes a
+% corresponding average intensity projection image to aid in identifying
+% features in the pointillist image. 
 
-       %workflow: Open qSR with specific file. Open corresponding 488
-       %image. If the cell has already been analyzed, say so in a pop-up.
-       %Advance to next cell upon closing qSR.
+% Makes the following assumptions about the structure of the data. 
+%    directory/ExperimentalCondition/cell##*{PALM|488}*/cell##*{PALM|488}*{.ome.tif|results.mat}
+%
+%    The reference is hardcoded to refer to the 488 channel using in
+%    dendra2 preconversion imaging. This can be adjusted by changing the
+%    dir_rec call in the section "Find all 488 and PALM images". 
+%
+%    The super-resolution data is hard-coded to refer to outputs from MTT.
+%    This can be adjusted by changing the
+%    dir_rec call in the section "Find all 488 and PALM images" to search
+%    for a supported super-resolution file format.
+%    
+%    Each PALM and 488 data set are contained within a folder of the same
+%    name, which is contained within a folder labeling the experimental
+%    conditions. 
+%
+%    Within each experimental condition, each roi should be
+%    named with a cell#_{condition} where the imaging mode is labeled in
+%    condition (PALM for superres, and 488 for the reference file) and #
+%    uniquely refers to to specific regions of interest. 
+%
+%    For example:
+%    directory/Dish1_starved/cell1_PALM/cell1_PALM_results.mat
+%    directory/100nM_dye/cell9_488/cell8_488.ome.tif
+
+
+current_directory = pwd;
+cd(directory)
 
 %% Find all 488 and PALM images
 
@@ -128,3 +156,5 @@ function Randomize_qSR(directory)
         catch
         end
     end
+
+    cd(current_directory)
