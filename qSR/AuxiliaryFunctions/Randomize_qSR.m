@@ -141,7 +141,7 @@ cd(directory)
 
         display('Add check for analyzed files.')
         current_PALM_file = PALM_files{random_order(i)};
-        qSR(current_PALM_file)   
+        gui1 = qSR(current_PALM_file);   
 
         % Pause here until the user presses "Continue"
         uiwait(f1);
@@ -153,6 +153,11 @@ cd(directory)
         
         try
             close(f2);
+        catch
+        end
+        
+        try
+            close(gui1);
         catch
         end
     end
