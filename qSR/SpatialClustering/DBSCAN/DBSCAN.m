@@ -23,13 +23,14 @@ function [cluster_IDs,num_neighbors] = DBSCAN(data,lengthscale,nmin)
         if visited(i)
             continue
         end
-        visited(i)=true;
+%         visited(i)=true;
 
         if length(neighborhood{i})<nmin
             noise(i)=true;
             continue
         end
-
+        visited(i)=true;
+        
         num_clusters = num_clusters+1;
         [in_cluster,newly_visited]=build_cluster(data,i,nmin,neighborhood,N);
         cluster_IDs(in_cluster)=num_clusters;
