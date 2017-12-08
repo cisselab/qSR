@@ -115,6 +115,12 @@ cd(directory)
         
         is_corresponding = and(folder_id_pre == current_file_id     ,   cell_id_pre == current_cell_id) ; 
         
+        file_info = dir(PALM_files{i});
+        
+        if isdir([file_info.folder,filesep,'qSR_Analysis_Output'])
+            box1 = msgbox('qSR Analysis Output already exists.');
+        end
+        
         switch sum(is_corresponding)
             case 1
                 %Create an average projection 488 image.
@@ -139,7 +145,7 @@ cd(directory)
                 
         
 
-        display('Add check for analyzed files.')
+        display('FIX check for analyzed files. It doesnt seem to work right')
         current_PALM_file = PALM_files{random_order(i)};
         gui1 = qSR(current_PALM_file);   
 
@@ -158,6 +164,11 @@ cd(directory)
         
         try
             close(gui1);
+        catch
+        end
+        
+        try
+            close(box1);
         catch
         end
     end
