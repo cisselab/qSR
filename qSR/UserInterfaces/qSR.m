@@ -452,8 +452,8 @@ if isempty(dark_tolerance)
     msgbox('Invalid Input!')
     set(handles.DarkTimeTolerance,'String',1)
     guidata(hObject,handles)
-elseif dark_tolerance <=0
-    msgbox('Tolerance should be a positive integer!')
+elseif dark_tolerance <0%=0
+    msgbox('Tolerance should be a non-negative integer') %positive integer!')
     set(handles.DarkTimeTolerance,'String',1)
     guidata(hObject,handles)
 else
