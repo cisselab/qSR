@@ -22,7 +22,7 @@ function varargout = DBSCANgui(varargin)
 
 % Edit the above text to modify the response to help DBSCANgui
 
-% Last Modified by GUIDE v2.5 26-May-2016 16:22:51
+% Last Modified by GUIDE v2.5 05-Jan-2018 17:55:05
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -248,7 +248,15 @@ lengthscale = str2num(get(handles.LengthScale,'String'));
 nmin = str2num(get(handles.MinPoints,'String'));
 mainHandles=guidata(handles.mainObject);
 data=[mainHandles.fXpos',mainHandles.fYpos']; %mainHandles.fFrames
-[handles.cluster_IDs,~] = DBSCAN(data,lengthscale,nmin);
+%[handles.cluster_IDs,~] = DBSCAN(data,lengthscale,nmin);
+include_numeric = get(handles.IncludeBorderPoints,'Value');
+if include_numeric ==1
+    include = 'include';
+else
+    include = 'exclude';
+end
+
+[handles.cluster_IDs] = DBSCAN_kdtree(data,nmin,lengthscale,include); % Edit GUI to allow user to toggle between including and exlcuding edge points.
 guidata(hObject,handles)
 handles.sp_clusters=handles.cluster_IDs;
 handles=RawClustersFromFiltered(mainHandles,handles);
@@ -278,3 +286,12 @@ if isfield(handles,'cluster_IDs')
 else
     msgbox('You must first run the analysis!')
 end
+
+
+% --- Executes on button press in IncludeBorderPoints.
+function IncludeBorderPoints_Callback(hObject, eventdata, handles)
+% hObject    handle to IncludeBorderPoints (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of IncludeBorderPoints
