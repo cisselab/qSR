@@ -101,7 +101,15 @@ if numel(varargin)>0
 
     handles=AdjustPixelSize(hObject,eventdata,handles);
     
-    set(handles.FileDisplay,'String',['Data File: ',handles.directory,handles.filename])
+    filesep_locs = strfind(handles.directory,filesep);
+    if length(filesep_locs)<3
+        display_start = filesep_locs(1);
+    else
+        display_start = filesep_locs(end-2);
+    end
+    
+    set(handles.FileDisplay,'String',['Data File: ',handles.directory(display_start:end),handles.filename])
+%     set(handles.FileDisplay,'String',['Data File: ',handles.directory,handles.filename])
     guidata(hObject,handles)
 end
 
@@ -162,7 +170,15 @@ if filename ~= 0
 
     handles=AdjustPixelSize(hObject,eventdata,handles);
     
-    set(handles.FileDisplay,'String',['Data File: ',handles.directory,handles.filename])
+    filesep_locs = strfind(handles.directory,filesep);
+    if length(filesep_locs)<3
+        display_start = filesep_locs(1);
+    else
+        display_start = filesep_locs(end-2);
+    end
+    
+    set(handles.FileDisplay,'String',['Data File: ',handles.directory(display_start:end),handles.filename])
+%     set(handles.FileDisplay,'String',['Data File: ',handles.directory,handles.filename])
     guidata(hObject,handles)
 end
 
