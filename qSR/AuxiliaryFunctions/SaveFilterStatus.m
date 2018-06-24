@@ -1,5 +1,6 @@
 function SaveFilterStatus(hObject,handles,save_filename_full_path)
     fhandle=fopen(save_filename_full_path,'w');
+    fprintf(fhandle,[handles.directory,handles.filename, ' \n'])
     switch handles.which_filter
         case 'raw'
             fprintf(fhandle,'Filter: Raw \n');
