@@ -27,3 +27,5 @@ function ExportClusterStatistics(statistics,filename_fullpath)
         end
         fprintf(filehandle,'\n');
     end
+    
+    fclose(filehandle)
