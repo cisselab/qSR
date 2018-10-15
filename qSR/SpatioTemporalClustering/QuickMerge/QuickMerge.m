@@ -12,12 +12,12 @@ function ids_out=QuickMerge(times,xpos,ypos,sigma,dark_time)
     progress_bar_handle=waitbar(0,'Running Spatiotemporal Merge');
     for i = 1:N
         
-        %Display Progress
-        if mod(i,round(N/100)) ==0
-            if ishandle(progress_bar_handle)
-                waitbar(i/N,progress_bar_handle,'Running Spatiotemporal Merge')
-            end
-        end
+%         %Display Progress
+%         if mod(i,round(N/100)) ==0
+%             if ishandle(progress_bar_handle)
+%                 waitbar(i/N,progress_bar_handle,'Running Spatiotemporal Merge')
+%             end
+%         end
         
         %Initialize new cluster?
         if ids(i) == 0
@@ -45,12 +45,24 @@ function ids_out=QuickMerge(times,xpos,ypos,sigma,dark_time)
             end
             
         end
+        
+        %Display Progress
+        if mod(i,round(N/100)) ==0
+            if ishandle(progress_bar_handle)
+                waitbar(i/N,progress_bar_handle,'Running Spatiotemporal Merge')
+            end
+        end
     end
     
     unique_ids=unique(ids);
     ids_out=zeros(size(ids));
     for i = 1:length(unique_ids)
         ids_out(ids==unique_ids(i))=i;
+        if mod(i,round(length(unique_ids)/100)) ==0
+            if ishandle(progress_bar_handle)
+                waitbar(i/length(unique_ids),progress_bar_handle,'Consolidating IDs')
+            end
+        end
     end
     
     [~,unsort_idxs]=sort(sort_idxs);
