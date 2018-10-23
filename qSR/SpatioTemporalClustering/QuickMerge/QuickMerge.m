@@ -9,7 +9,11 @@ function ids_out=QuickMerge(times,xpos,ypos,sigma,dark_time)
     ids=zeros(1,N);
     cluster_number=0;
     %cluster_end_times=[];
-    progress_bar_handle=waitbar(0,'Running Spatiotemporal Merge');
+    try
+        progress_bar_handle=waitbar(0,'Running Spatiotemporal Merge');
+    catch
+        progress_bar_handle = [];
+    end
     for i = 1:N
         
 %         %Display Progress

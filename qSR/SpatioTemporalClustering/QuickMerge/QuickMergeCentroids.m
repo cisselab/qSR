@@ -8,7 +8,11 @@ function [frameCentroid,xCentroid,yCentroid,totalIntensity]=QuickMergeCentroids(
     unique_ids = unique(st_ids);
     unique_ids = unique_ids(unique_ids>0);
     
-    progress_bar_handle=waitbar(0,'Merging Clusters');
+    try
+        progress_bar_handle=waitbar(0,'Merging Clusters');
+    catch
+        progress_bar_handle=[];
+    end
     
     for i = 1:length(unique_ids)
 
