@@ -44,5 +44,8 @@ function statistics=EvaluateSpatialSummaryStatistics(Xpos,Ypos,sp_clusters)
        end
     end
     
-    statistics=statistics([statistics.cluster_size]>0);
+    if isfield(statistics,'cluster_size')
+        statistics=statistics([statistics.cluster_size]>0);
+ 
+    end
     
