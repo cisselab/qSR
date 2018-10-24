@@ -1,4 +1,15 @@
-function ImOut = Render(Xpos,Ypos,num_pix,sigma_render)
+function ImOut = Render(Xpos,Ypos,num_pix,sigma_render,show_figure)
+
+if nargin < 5
+   show_figure = true; 
+end
+
+[r,c] = size(Xpos);
+if c == 1
+    Xpos = Xpos'; %Ensures that input is a row vector.
+    Ypos = Ypos'; %Ensures that input is a row vector.
+end
+
 
 Xmin = min(Xpos);Xmax=max(Xpos);Ymin = min(Ypos);Ymax=max(Ypos);
 delt_X=Xmax-Xmin;delt_Y=Ymax-Ymin;
@@ -27,10 +38,14 @@ Im2=Im2(:,end:-1:1)';
 
 ImOut=Im2;
 
-figure
-imshow(ImOut,'colormap',hot)
-h=colorbar;
-xlabel(h,'Localizations/um^2','FontSize',14)
-imcontrast(gca)
+if show_figure
+
+    figure
+    imshow(ImOut,'colormap',hot)
+    h=colorbar;
+    xlabel(h,'Localizations/um^2','FontSize',14)
+    imcontrast(gca)
+    
+end
 
 
